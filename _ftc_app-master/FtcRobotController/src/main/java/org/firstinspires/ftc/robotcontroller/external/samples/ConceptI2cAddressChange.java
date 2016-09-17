@@ -53,7 +53,7 @@ public class ConceptI2cAddressChange extends LinearOpMode {
   public static final int ADDRESS_SET_NEW_I2C_ADDRESS = 0x70;
   // trigger bytes used to change I2C address on ModernRobotics sensors.
   public static final byte TRIGGER_BYTE_1 = 0x55;
-  public static final byte TRIGGER_BYTE_2 = (byte) 0xab;
+  public static final byte TRIGGER_BYTE_2 = (byte) 0xaa;
   // Expected bytes from the Modern Robotics IR Seeker V3 memory map
   public static final byte IR_SEEKER_V3_FIRMWARE_REV = 0x12;
   public static final byte IR_SEEKER_V3_SENSOR_ID = 0x49;
