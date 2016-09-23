@@ -53,19 +53,27 @@ public class DemoBot extends OpMode
         } else if (gamepad1.right_stick_y < 0){
             throttleRight = gamepad1.right_stick_y * gamepad1.right_stick_y * -1;
         }
+        else
+            {
+                throttleRight = 0;
+            }
         if (gamepad1.left_stick_y > 0){
             throttleLeft = gamepad1.left_stick_y * gamepad1.left_stick_y;
         } else if (gamepad1.left_stick_y < 0){
             throttleLeft = gamepad1.left_stick_y * gamepad1.left_stick_y * -1;
         }
-        throttleLeft = 0;
-        throttleRight = 0;
+        else
+        {
+            throttleLeft = 0;
+        }
 
 
-        motorLeftFront.setPower(throttleLeft);
-        motorRightFront.setPower(-throttleRight);
-        motorLeftBack.setPower(throttleLeft);
-        motorRightBack.setPower(-throttleRight);
+
+
+        motorLeftFront.setPower(throttleRight);
+        motorRightFront.setPower(-throttleLeft);
+        motorLeftBack.setPower(throttleRight);
+        motorRightBack.setPower(-throttleLeft);
 
 
 
