@@ -24,6 +24,8 @@ public class DemoBot extends OpMode
 
     float throttleLeft = 0;
     float throttleRight = 0;
+    double throttleScalingLeft = 0.70;
+    double throttleScalingRight = 0.70;
     // Declares 2 float variables for the throttle
 
 
@@ -81,6 +83,9 @@ public class DemoBot extends OpMode
         }
 
         // Scales the  variable throttleLeft exponentially
+
+        throttleLeft = throttleLeft * (float)throttleScalingLeft;
+        throttleRight = throttleRight * (float)throttleScalingRight;
 
 
         motorLeftFront.setPower(throttleRight);
