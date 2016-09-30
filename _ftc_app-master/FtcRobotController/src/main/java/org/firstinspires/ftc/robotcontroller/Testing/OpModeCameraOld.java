@@ -2,15 +2,17 @@ package org.firstinspires.ftc.robotcontroller.Testing;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.hardware.Camera;
+import android.hardware.camera2.CameraDevice;
 import android.util.Log;
 
 import org.firstinspires.ftc.robotcontroller.Testing.CameraPreview;
 //import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.vuforia.ar.pl.Camera2_Preview;
 
 import java.io.ByteArrayOutputStream;
 
@@ -29,10 +31,10 @@ public class OpModeCamera extends OpMode {
     private String data;
     private int ds = 1; // downsampling parameter
 
-    public Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
+    public Camera2_Preview previewCallback = new Camera2_Preview() {
         public void onPreviewFrame(byte[] data, Camera camera) {
             try {
-                Camera.Parameters parameters = camera.getParameters();
+                Camera parameters = camera.getParameters();
                 width = parameters.getPreviewSize().width;
                 height = parameters.getPreviewSize().height;
                 yuvImage = new YuvImage(data, ImageFormat.NV21, width, height, null);
