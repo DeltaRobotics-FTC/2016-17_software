@@ -42,6 +42,7 @@ public class OpModeCameraNew extends OpMode {
     public Camera2_Preview camPre;
     public CameraDevice camera;
 
+
     private int mState = STATE_PREVIEW;
 
     private static final int STATE_PREVIEW = 0;
