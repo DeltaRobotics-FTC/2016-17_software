@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.camera2.CameraDevice;
@@ -76,6 +77,8 @@ import java.util.List;
  */
 public class OpModeCameraNew extends Activity{
 
+    static final String TAG = "OpModeCameraNew";
+
     HandlerThread camBackgroundThread;
     Handler camBackgroundHandler;
     Handler camForegroundHandler;
@@ -122,8 +125,8 @@ public class OpModeCameraNew extends Activity{
 
         camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
-        View layout = getLayoutInflater().inflate(R.layout.mainactivity, null);
-        camSurfaceView = (SurfaceView) layout.findViewById(R.id.mainSurfaceView);
+        //View layout = getLayoutInflater().inflate(R.layout.mainactivity, null);
+        //camSurfaceView = (SurfaceView) layout.findViewById(R.id.mainSurfaceView);
         camSurfaceView.getHolder().addCallback(camSurfaceHolderCallback);
         setContentView(camSurfaceView);
     }
@@ -188,7 +191,7 @@ public class OpModeCameraNew extends Activity{
                             Log.i(TAG, "CaptureSize:" + largestSize);
                             camCaptureBuffer = ImageReader.newInstance(largestSize.getWidth(),
                                     largestSize.getHeight(), ImageFormat.JPEG, 2);
-                            camCaptureBuffer.setOnImageAvailableListener(camImageCaptureListener, camBackgroundHandler);
+                            //camCaptureBuffer.setOnImageAvailableListener(camImageCaptureListener, camBackgroundHandler);
 
                             Log.i(TAG, "SurfaceView Size:" + camSurfaceView.getWidth() + 'x' + camSurfaceView.getHeight());
                             Size optimalSize = chooseBigEnoughSize(info.getOutputSizes(SurfaceHolder.class), width, height);
@@ -204,16 +207,86 @@ public class OpModeCameraNew extends Activity{
                 } catch (CameraAccessException e){
                     Log.e(TAG, "Unable to list cameras", e);
                 }
-                Log.e(TAG, "found no back-facing cameras")
+                Log.e(TAG, "found no back-facing cameras");
             } else if(camera != null){
                 Log.e(TAG, "camera has not been closed previously");
                 return;
             }
+
+            //Opening Camera
             try{
-                camMan.openCamera(camId, camS);
+                camMan.openCamera(camId, camStateCallback, camBackgroundHandler);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "Failed to configure output surface", e);
+            }
+            camGotSecondCallback = true;
+            //continued in camStateCallback.onOpened()
+        }
+    };
+
+    final CameraDevice.StateCallback camStateCallback = new CameraDevice.StateCallback(){
+        @Override
+        public void onOpened(CameraDevice camera2) {
+            Log.i(TAG, "Successfully opened camera");
+            camera = camera2;
+            try{
+                List<Surface> outputs = Arrays.asList(camSurfaceView.getHolder().getSurface(), camCaptureBuffer.getSurface());
+                camera2.createCaptureSession(outputs, camCaptureSessionListener, camBackgroundHandler);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "Failed to create capture session", e);
+            }
+            //Continues in camCaptureSessionListener.onConfigured()
+        }
+        @Override
+        public void onDisconnected(CameraDevice camera2){
+            Log.e(TAG, "Camera was diconnected");
+        }
+
+        @Override
+        public void onError(CameraDevice camera2, int error){
+            Log.e(TAG, "State Error on device'" + camera2.getId() + "':code" + error);
+        }
+    };
+
+    final CameraCaptureSession.StateCallback camCaptureSessionListener = new CameraCaptureSession.StateCallback(){
+        @Override
+        public void onConfigured(CameraCaptureSession session){
+            Log.i(TAG, "Finished configuring camera outputs");
+            camCaptureSession = session;
+
+            SurfaceHolder holder = camSurfaceView.getHolder();
+            if(holder != null) {
+                try{
+                    //request preview images
+                    CaptureRequest.Builder requestBuilder = camera.createCaptureRequest(camera.TEMPLATE_PREVIEW);
+                    requestBuilder.addTarget(holder.getSurface());
+                    CaptureRequest previewRequest = requestBuilder.build();
+
+                    try{
+                        //start displaying preview images
+                        session.setRepeatingRequest(previewRequest, null, null);
+                    } catch(CameraAccessException e){
+                        Log.e(TAG, "failed to make repeating preview request", e);
+                    }
+                } catch(CameraAccessException e){
+                    Log.i(TAG, "Failed to build preview request", e);
+                }
+            } else {
+                Log.e(TAG, "Holder didn't exist when trying to formulate preview request");
             }
         }
-    }
+
+        @Override
+        public void onClosed(CameraCaptureSession session) {
+            camCaptureSession = null;
+        }
+        @Override
+        public void onConfigureFailed(CameraCaptureSession session) {
+            Log.e(TAG, "Configuration error on device '" + camera.getId());
+        }};
+
+
+
 
     public void startCamera(){
 
@@ -238,18 +311,4 @@ public class OpModeCameraNew extends Activity{
         return rgbImage;
     }
 
-
-    @Override
-    public void init(){
-        startCamera();
-
-    }
-    @Override
-    public void loop(){
-
-    }
-    @Override
-    public void stop(){
-        stopCamera();
-    }
 }
