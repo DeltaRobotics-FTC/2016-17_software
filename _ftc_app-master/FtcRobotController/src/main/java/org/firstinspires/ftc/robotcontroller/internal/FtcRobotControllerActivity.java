@@ -94,8 +94,6 @@ import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 import org.firstinspires.ftc.robotcore.internal.AppUtil;
 import org.firstinspires.inspection.RcInspectionActivity;
 
-import org.firstinspires.ftc.robotcontroller.Testing.OpModeCamera;
-import org.firstinspires.ftc.robotcontroller.Testing.CameraPreview;
 
 
 import java.io.File;
@@ -141,32 +139,7 @@ public class FtcRobotControllerActivity extends Activity {
   protected FtcEventLoop eventLoop;
   protected Queue<UsbDevice> receivedUsbAttachmentNotifications;
 
-  public void initPreview(final Camera camera, final OpModeCamera context,
-                          final Camera.PreviewCallback previewCallback)
-  {
-    runOnUiThread(new Runnable(){
-      @Override
 
-      public void run(){
-
-        context.preview = new CameraPreview(FtcRobotControllerActivity.this, camera, previewCallback);
-        FrameLayout previewLayout = (FrameLayout) findViewById (R.id.previewLayout);
-        previewLayout.addView(context.preview);}});
-
-  }
-
-  public void removePreview(final OpModeCamera context) {
-
-
-    runOnUiThread(new Runnable(){
-
-      @Override
-
-      public void run(){
-
-        FrameLayout previewLayout = (FrameLayout) findViewById(R.id.previewLayout);
-        previewLayout.removeAllViews();}});
-  }
 
   protected class RobotRestarter implements Restarter {
 

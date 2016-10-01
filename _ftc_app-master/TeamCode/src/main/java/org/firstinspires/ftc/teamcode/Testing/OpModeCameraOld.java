@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.robotcontroller.Testing;
+package org.firstinspires.ftc.teamcode.Testing;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -6,10 +6,8 @@ import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
-import android.hardware.camera2.CameraDevice;
 import android.util.Log;
 
-import org.firstinspires.ftc.robotcontroller.Testing.CameraPreview;
 //import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.vuforia.ar.pl.Camera2_Preview;
@@ -79,24 +77,8 @@ public class OpModeCamera extends OpMode {
         return true;
     }
 
-    public Camera openCamera(int cameraInfoType) {
-        int cameraId = -1;
-        Camera cam = null;
-        int numberOfCameras = Camera.getNumberOfCameras();
-        for (int i = 0; i < numberOfCameras; i++) {
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            Camera.getCameraInfo(i, info);
-            if (info.facing == cameraInfoType) { // Camera.CameraInfo.CAMERA_FACING_FRONT or BACK
-                cameraId = i;
-                break;
-            }
-        }
-        try {
-            cam = Camera.open(cameraId);
-        } catch (Exception e) {
-            Log.e("Error", "Can't Open Camera");
-        }
-        return cam;
+    private void openCamera(int width, int height){
+
     }
 
     public int red(int pixel) {
@@ -147,38 +129,11 @@ public class OpModeCamera extends OpMode {
     }
 
     public void startCamera() {
-        camera = openCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
 
-        camera.setPreviewCallback(previewCallback);
-
-        Camera.Parameters parameters = camera.getParameters();
-
-        width = parameters.getPreviewSize().width / ds;
-        height = parameters.getPreviewSize().height / ds;
-        parameters.setPreviewSize(width, height);
-
-        camera.setParameters(parameters);
-
-        data = parameters.flatten();
-
-        //if (preview == null) {
-        //    ((FtcRobotControllerActivity) hardwareMap.appContext).initPreview(camera, this, previewCallback);
-        //}
     }
 
     public void stopCamera() {
-        if (camera != null) {
-            //  if (preview != null) {
-            //      ((FtcRobotControllerActivity) hardwareMap.appContext).removePreview(this);
-            //      preview = null;
-            //  }
-            camera.stopPreview();
-            camera.setPreviewCallback(null);
-            if(camera != null) {
-                camera.release();
-            }
-            camera = null;
-        }
+
     }
 
     /*

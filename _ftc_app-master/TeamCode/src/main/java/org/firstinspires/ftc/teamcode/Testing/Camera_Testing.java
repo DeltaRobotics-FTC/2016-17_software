@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.robotcontroller.Testing;
+package org.firstinspires.ftc.teamcode.Testing;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import android.graphics.Bitmap;
 /**
  * Created by RoboticsUser on 12/29/2015.
