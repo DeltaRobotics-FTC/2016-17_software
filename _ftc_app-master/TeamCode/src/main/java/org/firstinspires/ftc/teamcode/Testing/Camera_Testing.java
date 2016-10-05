@@ -30,16 +30,16 @@ public class Camera_Testing extends OpModeCamera{
 
             Bitmap rgbImage;
             rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
-            for (int x = 0; x < 120; x++) {
-                for (int y = 0; y < 320; y++) {
+            for (int x = 0; x < 240; x++) {
+                for (int y = 121; y < 320; y++) {
                     int pixelL = rgbImage.getPixel(x, y);
                     redValueLeft += red(pixelL);
                     blueValueLeft += blue(pixelL);
                     greenValueLeft += green(pixelL);
                 }
             }
-            for (int a = 121; a < 240; a++) {
-                for (int b = 0; b < 320; b++) {
+            for (int a = 0; a < 240; a++) {
+                for (int b = 0; b < 160; b++) {
                     int pixelR = rgbImage.getPixel(a,b);
                     redValueRight += red(pixelR);
                     blueValueRight += blue(pixelR);
