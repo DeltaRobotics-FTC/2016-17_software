@@ -10,13 +10,13 @@ import android.hardware.Camera;
 
 import java.io.IOException;
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+public class CameraPreviewTest extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private static String TAG = "DEBUG";
     private Camera.PreviewCallback previewCallback;
 
-    public CameraPreview(Context context, Camera camera, Camera.PreviewCallback previewCallback) {
+    public CameraPreviewTest(Context context, Camera camera, Camera.PreviewCallback previewCallback) {
         super(context);
         mCamera = camera;
 

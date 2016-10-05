@@ -4,9 +4,9 @@
           package="com.qualcomm.ftcrobotcontroller"
           android:versionCode="12"
           android:versionName="2.2">
-  <uses-permission android:name = "android.permissionCAMERA"/>
+  <uses-permission android:name = "android.permission.CAMERA"/>
   <uses-permission android:name = "android.hardware.camera"/>
-  <uses-permission android:name = "android.hardware.camera.Front"/>
+  <uses-permission android:name = "android.hardware.camera.front"/>
   <uses-permission android:name = "android.hardware.camera.back"/>
   <application
     android:allowBackup="true"

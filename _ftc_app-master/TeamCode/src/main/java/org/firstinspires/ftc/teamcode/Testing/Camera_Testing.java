@@ -2,12 +2,13 @@ package org.firstinspires.ftc.teamcode.Testing;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import android.graphics.Bitmap;
+import for_camera_opmodes.OpModeCamera;
 /**
  * Created by RoboticsUser on 12/29/2015.
  */
-@Autonomous(name = "Camera_Testing", group = "SensorTesting")
+@Autonomous(name = "Camera_Testing_Op", group = "SensorTesting")
 
-public class Camera_Testing extends OpModeCamera {
+public class Camera_Testing extends OpModeCamera{
     private int looped = 0;
     private int ds2 = 2;
 
@@ -29,16 +30,16 @@ public class Camera_Testing extends OpModeCamera {
 
             Bitmap rgbImage;
             rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
-            for (int x = 0; x < 320; x++) {
-                for (int y = 121; y < 240; y++) {
+            for (int x = 0; x < 120; x++) {
+                for (int y = 0; y < 320; y++) {
                     int pixelL = rgbImage.getPixel(x, y);
                     redValueLeft += red(pixelL);
                     blueValueLeft += blue(pixelL);
                     greenValueLeft += green(pixelL);
                 }
             }
-            for (int a = 0; a < 320; a++) {
-                for (int b = 0; b < 120; b++) {
+            for (int a = 121; a < 240; a++) {
+                for (int b = 0; b < 320; b++) {
                     int pixelR = rgbImage.getPixel(a,b);
                     redValueRight += red(pixelR);
                     blueValueRight += blue(pixelR);
@@ -51,8 +52,8 @@ public class Camera_Testing extends OpModeCamera {
             redValueRight = normalizePixels(redValueRight);
             blueValueRight = normalizePixels(blueValueRight);
             greenValueRight = normalizePixels(greenValueRight);
-            int colorLeft = highestColor(redValueLeft, blueValueLeft);
-            int colorRight = highestColor(redValueRight, blueValueRight);
+            int colorLeft = highestColor(redValueLeft, greenValueLeft, blueValueLeft);
+            int colorRight = highestColor(redValueRight, greenValueRight, blueValueRight);
             String colorStringLeft = "";
             String colorStringRight = "";
             switch (colorLeft) {
