@@ -11,6 +11,7 @@ import for_camera_opmodes.OpModeCamera;
 public class Camera_Testing extends OpModeCamera{
     private int looped = 0;
     private int ds2 = 2;
+    private boolean flag = true;
 
     public void init() {
         setCameraDownsampling(2);
@@ -29,17 +30,30 @@ public class Camera_Testing extends OpModeCamera{
             int greenValueRight = -76800;
 
             Bitmap rgbImage;
+
+            //Put results to phone with red/blue/green
             rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds2);
             for (int x = 0; x < 240; x++) {
-                for (int y = 121; y < 320; y++) {
+                for (int y = 0; y < 320; y++) {
+                    rgbImage.setPixel(x,y,greatestColor(rgbImage.getPixel(x,y)));
+                }
+            }
+            SaveImage(rgbImage);
+
+
+            //Evaluating left side of screen/beacon
+            for (int x = 0; x < 120; x++) {
+                for (int y = 90; y < 230; y++) {
                     int pixelL = rgbImage.getPixel(x, y);
                     redValueLeft += red(pixelL);
                     blueValueLeft += blue(pixelL);
                     greenValueLeft += green(pixelL);
                 }
             }
-            for (int a = 0; a < 240; a++) {
-                for (int b = 0; b < 160; b++) {
+
+            //Evaluating right side of screen/beacon
+            for (int a = 121; a < 240; a++) {
+                for (int b = 90; b < 230; b++) {
                     int pixelR = rgbImage.getPixel(a,b);
                     redValueRight += red(pixelR);
                     blueValueRight += blue(pixelR);
@@ -61,7 +75,7 @@ public class Camera_Testing extends OpModeCamera{
                     colorStringLeft = "RED";
                     break;
                 case 1:
-                    colorStringLeft = "Color Undetected.";
+                    colorStringLeft = "GREEN";
                     break;
                 case 2:
                     colorStringLeft = "BLUE";
@@ -71,7 +85,7 @@ public class Camera_Testing extends OpModeCamera{
                     colorStringRight = "RED";
                     break;
                 case 1:
-                    colorStringRight = "Color Undetected.";
+                    colorStringRight = "GREEN";
                     break;
                 case 2:
                     colorStringRight = "BLUE";
@@ -89,6 +103,7 @@ public class Camera_Testing extends OpModeCamera{
     }
 
     public void stop() {
+
         super.stop();
     }
 }
