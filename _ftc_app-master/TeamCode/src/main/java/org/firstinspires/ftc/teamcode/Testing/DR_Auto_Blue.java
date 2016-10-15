@@ -49,6 +49,7 @@ public class DR_Auto_Blue extends Camera_Testing {
     public void loop()
     {
 
+
         L = colorSensorL.argb() / 1000000;
         R = colorSensorR.argb() / 1000000;
         O = ODS.getRawLightDetected();
@@ -67,6 +68,8 @@ public class DR_Auto_Blue extends Camera_Testing {
                 if (((motorLF.getCurrentPosition() + motorRF.getCurrentPosition()) / 2) > 3000)
                 {
 
+                    colorSensorL.enableLed(true);
+                    colorSensorR.enableLed(true);
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
@@ -146,11 +149,13 @@ public class DR_Auto_Blue extends Camera_Testing {
                 motorLB.setPower(0.0);
                 motorRF.setPower(0.0);
                 motorRB.setPower(0.0);
+
                 state = States.CAMERA;
                 break;
 
             case CAMERA:
-
+                colorSensorL.enableLed(false);
+                colorSensorR.enableLed(false);
                 if (imageReady()) {
                     int redValueLeft = -76800;
                     int blueValueLeft = -76800;
