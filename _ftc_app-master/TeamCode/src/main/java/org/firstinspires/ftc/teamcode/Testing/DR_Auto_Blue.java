@@ -6,10 +6,13 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 /**
  * Created by RoboticsUser on 10/13/2016.
  */
+
+@Autonomous (name = "Auto_Blue", group = "")
 public class DR_Auto_Blue extends Camera_Testing {
 
     DcMotor motorLF;
