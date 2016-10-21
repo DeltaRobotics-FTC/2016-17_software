@@ -32,6 +32,7 @@ public class ColorSensorTesting extends OpMode
         flag_left = false;
         flag_right = false;
     }
+
     public void loop () {
         colorSensorL.enableLed(true);
         colorSensorR.enableLed(true);
