@@ -26,15 +26,21 @@ public class ColorSensorTesting extends OpMode
     public void init() {
 
         colorSensorL = hardwareMap.colorSensor.get("colorSensorL");
-        colorSensorL.setI2cAddress(I2cAddr.create7bit(0x1e));
+        colorSensorL.setI2cAddress(I2cAddr.create7bit(0x1e)); //0x3c - new, Port 0
         colorSensorR = hardwareMap.colorSensor.get("colorSensorR");
-        colorSensorR.setI2cAddress(I2cAddr.create7bit(0x26));
+        colorSensorR.setI2cAddress(I2cAddr.create7bit(0x26)); //0x4c - old, Port 1
         flag_left = false;
         flag_right = false;
     }
     public void loop () {
-
         colorSensorL.enableLed(true);
+        colorSensorR.enableLed(true);
+        telemetry.addData("Left Side Alpha:", colorSensorL.alpha());
+        telemetry.addData("Left Argb", colorSensorL.argb());
+        telemetry.addData("Right Side Alpha:", colorSensorR.alpha());
+        telemetry.addData("Right Argb", colorSensorR.argb());
+
+        /*colorSensorL.enableLed(true);
         colorSensorR.enableLed(true);
         flag_left = true;
         flag_right = true;
@@ -65,10 +71,10 @@ public class ColorSensorTesting extends OpMode
             telemetry.addData("Blue - R", colorSensorR.blue());
             telemetry.addData("Green - R", colorSensorR.green());
             telemetry.addData("Hue - R", hsvRValues[0]);
-        }
+        }*/
     }
     public void stop () {
-        colorSensorL.enableLed(false);
-        colorSensorR.enableLed(false);
+        //colorSensorL.enableLed(false);
+        //colorSensorR.enableLed(false);
         }
 }
