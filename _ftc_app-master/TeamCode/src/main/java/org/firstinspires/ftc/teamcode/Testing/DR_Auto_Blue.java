@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -19,19 +20,26 @@ public class DR_Auto_Blue extends Camera_Testing {
     DcMotor motorLB;
     DcMotor motorRF;
     DcMotor motorRB;
-    Servo bBP;
+    //Servo bBP;
     ColorSensor colorSensorL;
     ColorSensor colorSensorR;
-    OpticalDistanceSensor ODS;
+    //OpticalDistanceSensor ODS;
 
-    enum States {INIT_MOTORS, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON}
+    enum States {INIT_MOTORS, TURN, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON}
 
     States state;
+
     float L;
     float R;
     double O;
+    final int WhiteMaxValR = 716;
+    final int WhiteMinValR = 700;
+    final int WhiteMaxValL = 1084;
+    final int WhiteMinValL = 1070;
+
     private int ds2 = 2;
     int bBPP;
+    int followCnt = 100000000;
 
     public void init() {
 
@@ -39,10 +47,24 @@ public class DR_Auto_Blue extends Camera_Testing {
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorRB = hardwareMap.dcMotor.get("motorRB");
         motorRF = hardwareMap.dcMotor.get("motorRF");
-        bBP = hardwareMap.servo.get("bBP");
+        //bBP = hardwareMap.servo.get("bBP");
         colorSensorR = hardwareMap.colorSensor.get("colorSensorR");
         colorSensorL = hardwareMap.colorSensor.get("colorSensorL");
-        ODS = hardwareMap.opticalDistanceSensor.get("ODS");
+        //ODS = hardwareMap.opticalDistanceSensor.get("ODS");
+
+        //colorSensorL = hardwareMap.colorSensor.get("colorSensorL");
+        colorSensorL.setI2cAddress(I2cAddr.create7bit(0x1e)); //0x3c - new, Port 0
+        //colorSensorR = hardwareMap.colorSensor.get("colorSensorR");
+        colorSensorR.setI2cAddress(I2cAddr.create7bit(0x26)); //0x4c - old, Port 2
+
+        motorLF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorRF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorLF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorRF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        state = States.INIT_MOTORS;
+
+
 
         setCameraDownsampling(2);
         super.init();
@@ -51,109 +73,153 @@ public class DR_Auto_Blue extends Camera_Testing {
 
     public void loop()
     {
-
-
-        L = colorSensorL.argb() / 1000000;
-        R = colorSensorR.argb() / 1000000;
-        O = ODS.getRawLightDetected();
+        L = readAvgHue(colorSensorL);
+        R = readAvgHue(colorSensorR);
+        //O = ODS.getRawLightDetected();
+        telemetry.addData("Current State", state);
 
         switch (state) {
 
             case INIT_MOTORS:
-                motorRF.setPower(1.0);
-                motorRB.setPower(1.0);
-                motorLF.setPower(1.0);
-                motorLB.setPower(1.0);
+                motorRF.setPower(-.25);
+                motorRB.setPower(-.25);
+                motorLF.setPower(.25);
+                motorLB.setPower(.25);
                 state = States.DRIVE_FORWARD1;
                 break;
 
             case DRIVE_FORWARD1:
-                if (((motorLF.getCurrentPosition() + motorRF.getCurrentPosition()) / 2) > 3000)
+                if (motorLB.getCurrentPosition() > 3000)
                 {
 
-                    colorSensorL.enableLed(true);
-                    colorSensorR.enableLed(true);
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
                     motorLB.setPower(0.0);
-                    state = States.TURN_TO_LINE1;
-                    break;
+                    state = States.TURN;
 
 
                 }
                 else
                 {
+                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
+                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
+                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
+                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
 
-                    break;
 
                 }
+                break;
+            case TURN:
+                if(motorLB.getCurrentPosition() <= 4500)
+                {
+                    motorLF.setPower(0.25);
+                    motorRF.setPower(0.0);
+                    motorLB.setPower(0.25);
+                    motorRB.setPower(0.0);
+                    //telemetry.addData("Case:","Turn");
+                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
+                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
+                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
+                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
+
+                }
+                else{
+                    state = States.TURN_TO_LINE1;
+                    motorRB.setPower(0.0);
+                    motorRF.setPower(0.0);
+                    motorLB.setPower(0.0);
+                    motorLF.setPower(0.0);
+
+                }
+                break;
+
 
             case TURN_TO_LINE1:
-                if (R >= 240 && R <= 80)
+                colorSensorL.enableLed(true);
+                colorSensorR.enableLed(true);
+                if (R <= WhiteMaxValR && R >= WhiteMinValR)
                 {
+                    telemetry.addData("R", R);
+                    telemetry.addData("Alpha", colorSensorR.alpha());
+
                     motorRB.setPower(0.0);
                     motorRF.setPower(0.0);
                     motorLB.setPower(0.0);
                     motorLF.setPower(0.0);
+                    sleep(1000);
                     state = States.TURN_TO_LINE2;
-                    break;
+
 
                 }
                 else
                 {
-                    motorLB.setPower(0.5);
-                    motorLF.setPower(0.5);
-                    break;
+
+                    motorLB.setPower(0.25);
+                    motorLF.setPower(0.25);
+                    telemetry.addData("R", R);
+                    telemetry.addData("Alpha", colorSensorR.alpha());
+
+
                 }
+                break;
 
             case TURN_TO_LINE2:
-                if (L >= 240 && L <= 80)
+                telemetry.addData("R", R);
+                telemetry.addData("Alpha", colorSensorR.alpha());
+
+                if (L <= WhiteMaxValL && L >= WhiteMinValL)
                 {
                     motorRB.setPower(0.0);
                     motorRF.setPower(0.0);
                     motorLB.setPower(0.0);
                     motorLF.setPower(0.0);
+                    sleep(1000);
                     state = States.LINE_FOLOWING;
-                    break;
+
                 }
                 else
                 {
                     motorLB.setPower(0.25);
                     motorLF.setPower(0.25);
-                    break;
+
                 }
+                break;
 
             case LINE_FOLOWING:
-                while (O <= 5) {
-                    L = colorSensorL.argb() / 1000000;
-                    R = colorSensorR.argb() / 1000000;
-                    O = ODS.getRawLightDetected();
-                    if (L >= 80 && L <= 260) {
-                        motorLF.setPower(0.4);
-                        motorLB.setPower(0.4);
-                        motorRF.setPower(0.5);
-                        motorRB.setPower(0.5);
+                        followCnt--;
 
-                    } else if (R >= 80 && L <= 260) {
-                        motorLF.setPower(0.5);
-                        motorLB.setPower(0.5);
-                        motorRF.setPower(0.4);
-                        motorRB.setPower(0.4);
+                        L = readAvgHue(colorSensorL);
+                        R = readAvgHue(colorSensorR);
+                        telemetry.addData("L", L);
+                        telemetry.addData("R", R);
+                        //O = ODS.getRawLightDetected();
+                        if (L >= WhiteMinValL && L <= WhiteMaxValL) {
+                            motorLF.setPower(0.4);
+                            motorLB.setPower(0.4);
+                            motorRF.setPower(0.5);
+                            motorRB.setPower(0.5);
+                        }
+                        else if (R >= WhiteMinValR && R <= WhiteMaxValR) {
+                            motorLF.setPower(0.5);
+                            motorLB.setPower(0.5);
+                            motorRF.setPower(0.4);
+                            motorRB.setPower(0.4);
+                        }
+                        else {
+                            motorLF.setPower(0.4);
+                            motorLB.setPower(0.4);
+                            motorRF.setPower(0.4);
+                            motorRB.setPower(0.4);
+                        }
 
-                    } else {
-                        motorLF.setPower(0.4);
-                        motorLB.setPower(0.4);
-                        motorRF.setPower(0.4);
-                        motorRB.setPower(0.4);
-                    }
+                if(followCnt == 0) {
+                    motorLF.setPower(0.0);
+                    motorLB.setPower(0.0);
+                    motorRF.setPower(0.0);
+                    motorRB.setPower(0.0);
+                    state = States.PRESS_BUTTON;
                 }
-                motorLF.setPower(0.0);
-                motorLB.setPower(0.0);
-                motorRF.setPower(0.0);
-                motorRB.setPower(0.0);
-
-                state = States.CAMERA;
                 break;
 
             case CAMERA:
@@ -247,7 +313,8 @@ public class DR_Auto_Blue extends Camera_Testing {
                     }
                 }
             case PRESS_BUTTON:
-                if(bBPP == 1)
+                sleep(1000);
+                /*if(bBPP == 1)
                 {
                     bBP.setPosition(0.2);
                     //Position for Right Side of Beacon
@@ -255,10 +322,12 @@ public class DR_Auto_Blue extends Camera_Testing {
                 else
                 {
                     bBP.setPosition(0.8);
-                    //Position for Left Side of Beacon
-                }
-        }
 
+                    //Position for Left Side of Beacon
+                }*/
+                break;
+        }
+        //telemetry.update();
 }
     public static void sleep(int amt) // In milliseconds
     {
@@ -267,6 +336,30 @@ public class DR_Auto_Blue extends Camera_Testing {
         while ((b - a) <= amt) {
             b = System.currentTimeMillis();
         }
+    }
+    public float readAvgHue(ColorSensor colorSensor)
+    {
+        float averagedARGB = 0;
+        float argbValToAverage = 0;
+        boolean flag = true;
+        for (int i = 2; i!= 10; ++i )
+        {
+
+            if (flag) {
+                float arbg = colorSensor.argb() / 1000000;
+                argbValToAverage = arbg + arbg;
+            }
+            flag = false;
+
+            float arbg = colorSensor.argb() / 1000000;
+            argbValToAverage = argbValToAverage + arbg;
+        }
+
+        averagedARGB = argbValToAverage / 10;
+
+
+
+        return  averagedARGB;
     }
 
 }

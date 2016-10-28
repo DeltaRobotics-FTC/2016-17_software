@@ -28,7 +28,8 @@ public class ColorSensorTesting extends OpMode
         colorSensorL = hardwareMap.colorSensor.get("colorSensorL");
         colorSensorL.setI2cAddress(I2cAddr.create7bit(0x1e)); //0x3c - new, Port 0
         colorSensorR = hardwareMap.colorSensor.get("colorSensorR");
-        colorSensorR.setI2cAddress(I2cAddr.create7bit(0x26)); //0x4c - old, Port 1
+        colorSensorR.setI2cAddress(I2cAddr.create7bit(0x26)); //0x4c - old, Port 2
+
         flag_left = false;
         flag_right = false;
     }
@@ -36,13 +37,14 @@ public class ColorSensorTesting extends OpMode
     public void loop () {
         colorSensorL.enableLed(true);
         colorSensorR.enableLed(true);
+        telemetry.addData("LeftColorSensorAverage", readAvgHue(colorSensorL));
+        telemetry.addData("RightColorSensorAverage", readAvgHue(colorSensorR));
         telemetry.addData("Left Side Alpha:", colorSensorL.alpha());
         telemetry.addData("Left Argb", colorSensorL.argb());
         telemetry.addData("Right Side Alpha:", colorSensorR.alpha());
         telemetry.addData("Right Argb", colorSensorR.argb());
 
-        /*colorSensorL.enableLed(true);
-        colorSensorR.enableLed(true);
+
         flag_left = true;
         flag_right = true;
 
@@ -53,6 +55,7 @@ public class ColorSensorTesting extends OpMode
 
             Color.RGBToHSV(colorSensorL.red() * 8, colorSensorL.green() * 8, colorSensorL.blue() * 8, hsvLValues);
 
+            telemetry.addData("", "Entered flag_left");
             telemetry.addData("Object Reference L", colorSensorL.toString());
             telemetry.addData("Clear - L", colorSensorL.alpha());
             telemetry.addData("Red - L", colorSensorL.red());
@@ -66,16 +69,31 @@ public class ColorSensorTesting extends OpMode
 
             Color.RGBToHSV(colorSensorR.red() * 8, colorSensorR.green() * 8, colorSensorR.blue() * 8, hsvRValues);
 
+            telemetry.addData("", "Entered flag_right");
             telemetry.addData("Object Reference R", colorSensorR.toString());
             telemetry.addData("Clear - R", colorSensorR.alpha());
             telemetry.addData("Red - R", colorSensorR.red());
             telemetry.addData("Blue - R", colorSensorR.blue());
             telemetry.addData("Green - R", colorSensorR.green());
             telemetry.addData("Hue - R", hsvRValues[0]);
-        }*/
+        }
     }
     public void stop () {
         //colorSensorL.enableLed(false);
         //colorSensorR.enableLed(false);
         }
+    public float readAvgHue(ColorSensor colorSensor)
+    {
+        final int numOfSamples = 10;
+        float averagedARGB = 0;
+        float argbValToAverage = 0;
+        for (int i = 0; i < numOfSamples; ++i )
+        {
+            argbValToAverage += (colorSensor.argb() / 1000000);
+        }
+
+        averagedARGB = argbValToAverage / numOfSamples;
+        return  averagedARGB;
+    }
+
 }
