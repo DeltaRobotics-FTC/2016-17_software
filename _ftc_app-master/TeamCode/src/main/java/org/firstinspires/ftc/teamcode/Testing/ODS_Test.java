@@ -28,19 +28,17 @@ public class ODS_Test extends OpMode
 
             telemetry.addData("ODSRawLightDetected", readAvgODSVal(ODS));
 
-
         }
-
 
         public double readAvgODSVal(OpticalDistanceSensor ODS)
         {
             double averagedRawLight = 0;
-            for (int i = 0; i < 10; ++i )
+            for (int i = 0; i < 100; ++i )
             {
                 averagedRawLight += ODS.getRawLightDetected();;
             }
 
-            averagedRawLight /= 10;
+            averagedRawLight /= 100;
 
 
 

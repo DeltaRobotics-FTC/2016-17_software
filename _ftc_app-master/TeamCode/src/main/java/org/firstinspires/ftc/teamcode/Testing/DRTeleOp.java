@@ -17,11 +17,14 @@ public class DRTeleOp extends OpMode
         DcMotor motorRB;
         DcMotor motorLF;
         DcMotor motorLB;
-        //Servo BBP;
+        Servo bBP;
         float throttleLeft = 0;
         float throttleRight = 0;
-        double throttleScalingLeft = 1.0;
-        double throttleScalingRight = 1.0;
+        double throttleScalingLeft = 0.75;
+        double throttleScalingRight = 0.75;
+        double bBPvalue = 0.5;
+        boolean guide = true;
+        boolean drive = true;
         // Declares 2 float variables for the throttle
 
 
@@ -34,6 +37,7 @@ public class DRTeleOp extends OpMode
             motorRF = hardwareMap.dcMotor.get("motorRF");
             motorLB = hardwareMap.dcMotor.get("motorLB");
             motorRB = hardwareMap.dcMotor.get("motorRB");
+            bBP = hardwareMap.servo.get("bBP");
 
             // Adds the components you previously initialized to the config
         }
@@ -42,6 +46,15 @@ public class DRTeleOp extends OpMode
         @Override
         public void loop()
         {
+            if(gamepad1.guide) {
+                guide = !guide;
+            }
+            if(gamepad1.dpad_down){
+                drive = false;
+            }
+            if(gamepad1.dpad_up){
+                drive = true;
+            }
             // Code inside the loop method is run over and over again when you press the start
             // button. When the opmode ends, this loop stops
 
@@ -74,16 +87,45 @@ public class DRTeleOp extends OpMode
                 throttleLeft = 0;
             }
 
+            if(gamepad2.b){
+                bBPvalue =+ .001;
+            }
+            else if(gamepad2.x){
+                bBPvalue =- .001;
+            }
+
             // Scales the  variable throttleLeft exponentially
 
-            throttleLeft = throttleLeft * (float)throttleScalingLeft;
-            throttleRight = throttleRight * (float)throttleScalingRight;
 
+            if (guide) {
+                throttleLeft = throttleLeft * (float).33;
+                throttleRight = throttleRight * (float).33;
+                throttleLeft = throttleLeft * (float)throttleScalingLeft;
+                throttleRight = throttleRight * (float)throttleScalingRight;
+            }
+            if (!guide){
+                throttleLeft = throttleLeft * (float)throttleScalingLeft;
+                throttleRight = throttleRight * (float)throttleScalingRight;
+            }
 
-            motorLF.setPower(-throttleLeft);
-            motorRF.setPower(throttleRight);
-            motorLB.setPower(-throttleLeft);
-            motorRB.setPower(throttleRight);
+            if(drive){
+                motorLF.setPower(-throttleLeft);
+                motorRF.setPower(throttleRight);
+                motorLB.setPower(-throttleLeft);
+                motorRB.setPower(throttleRight);
+            }
+            else{
+                motorLF.setPower(throttleLeft);
+                motorRF.setPower(-throttleRight);
+                motorLB.setPower(throttleLeft);
+                motorRB.setPower(-throttleRight);
+            }
+
+            bBP.setPosition(bBPvalue);
+
+            telemetry.addData("bBP", bBP);
+            telemetry.addData("Guide", guide);
+            telemetry.addData("Drive", drive);
             // Sets the appropriate motors to the appropriate variables
 
 
