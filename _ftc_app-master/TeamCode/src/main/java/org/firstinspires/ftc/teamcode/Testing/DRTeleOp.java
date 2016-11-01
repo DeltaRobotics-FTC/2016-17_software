@@ -60,6 +60,7 @@ public class DRTeleOp extends OpMode
 
             throttleLeft = Range.clip(throttleLeft, -1, 1);
             throttleRight = Range.clip(throttleRight, -1, 1);
+            bBPvalue = Range.clip(bBPvalue, .01, .99);
             // Makes it so the variables can't go below -1 or above 1
             // Sends telemetry (a message) to the driver's station that displays the
             // left and right stick Y values and the 2 variables throttleLeft and throttleRight
@@ -88,10 +89,10 @@ public class DRTeleOp extends OpMode
             }
 
             if(gamepad2.b){
-                bBPvalue =+ .001;
+                bBPvalue += .005;
             }
-            else if(gamepad2.x){
-                bBPvalue =- .001;
+            if(gamepad2.x){
+                bBPvalue -= .005;
             }
 
             // Scales the  variable throttleLeft exponentially
@@ -123,7 +124,7 @@ public class DRTeleOp extends OpMode
 
             bBP.setPosition(bBPvalue);
 
-            telemetry.addData("bBP", bBP);
+            telemetry.addData("bBP", bBPvalue);
             telemetry.addData("Guide", guide);
             telemetry.addData("Drive", drive);
             // Sets the appropriate motors to the appropriate variables
