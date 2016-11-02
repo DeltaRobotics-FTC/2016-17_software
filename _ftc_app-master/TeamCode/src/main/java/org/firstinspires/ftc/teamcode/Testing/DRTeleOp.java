@@ -17,14 +17,20 @@ public class DRTeleOp extends OpMode
         DcMotor motorRB;
         DcMotor motorLF;
         DcMotor motorLB;
+        DcMotor launcherWheel;
+        Servo popper;
         Servo bBP;
         float throttleLeft = 0;
         float throttleRight = 0;
-        double throttleScalingLeft = 0.75;
-        double throttleScalingRight = 0.75;
-        double bBPvalue = 0.5;
-        boolean guide = true;
+        double throttleScalingLeft = 1.0;
+        double throttleScalingRight = 1.0;
+        double bBPvalue = 0.01;
+        boolean guide = false;
         boolean drive = true;
+        double popperUp = 0.24;
+        double popperDown = 0.07;
+        boolean bumper = false;
+
         // Declares 2 float variables for the throttle
 
 
@@ -38,6 +44,10 @@ public class DRTeleOp extends OpMode
             motorLB = hardwareMap.dcMotor.get("motorLB");
             motorRB = hardwareMap.dcMotor.get("motorRB");
             bBP = hardwareMap.servo.get("bBP");
+            launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
+            popper = hardwareMap.servo.get("popper");
+            popper.setPosition(popperDown);
+            bBP.setPosition(bBPvalue);
 
             // Adds the components you previously initialized to the config
         }
@@ -46,6 +56,7 @@ public class DRTeleOp extends OpMode
         @Override
         public void loop()
         {
+
             if(gamepad1.guide) {
                 guide = !guide;
             }
@@ -55,6 +66,44 @@ public class DRTeleOp extends OpMode
             if(gamepad1.dpad_up){
                 drive = true;
             }
+
+            if (gamepad2.right_bumper)
+            {
+                bumper = true;
+            }
+
+            if (gamepad2.left_bumper)
+            {
+               bumper = false;
+            }
+
+            if (bumper)
+            {
+                launcherWheel.setPower(1.0);
+            }
+
+            if (!bumper)
+            {
+                launcherWheel.setPower(0.0);
+            }
+
+            /*if(gamepad2.a){
+                popperUp += .005;
+            }
+            if(gamepad2.y){
+                popperUp -= .005;
+            }
+            */
+            if (gamepad2.right_trigger > 0.2)
+            {
+                popper.setPosition(popperUp);
+
+            }
+            if (gamepad2.right_trigger < 0.2)
+            {
+                popper.setPosition(popperDown);
+            }
+
             // Code inside the loop method is run over and over again when you press the start
             // button. When the opmode ends, this loop stops
 
@@ -99,8 +148,8 @@ public class DRTeleOp extends OpMode
 
 
             if (guide) {
-                throttleLeft = throttleLeft * (float).33;
-                throttleRight = throttleRight * (float).33;
+                throttleLeft = throttleLeft * (float).5;
+                throttleRight = throttleRight * (float).5;
                 throttleLeft = throttleLeft * (float)throttleScalingLeft;
                 throttleRight = throttleRight * (float)throttleScalingRight;
             }
@@ -116,17 +165,19 @@ public class DRTeleOp extends OpMode
                 motorRB.setPower(throttleRight);
             }
             else{
-                motorLF.setPower(throttleLeft);
-                motorRF.setPower(-throttleRight);
-                motorLB.setPower(throttleLeft);
-                motorRB.setPower(-throttleRight);
+                motorLF.setPower(throttleRight);
+                motorRF.setPower(-throttleLeft);
+                motorLB.setPower(throttleRight);
+                motorRB.setPower(-throttleLeft);
             }
 
             bBP.setPosition(bBPvalue);
+            //popper.setPosition(popperUp);
 
             telemetry.addData("bBP", bBPvalue);
             telemetry.addData("Guide", guide);
             telemetry.addData("Drive", drive);
+            telemetry.addData("Popper Pos", popper.getPosition());
             // Sets the appropriate motors to the appropriate variables
 
 
