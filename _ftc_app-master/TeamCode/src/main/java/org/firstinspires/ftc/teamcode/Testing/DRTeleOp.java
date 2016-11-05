@@ -25,7 +25,7 @@ public class DRTeleOp extends OpMode
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
         double bBPvalue = 0.01;
-        boolean guide = false;
+        boolean bBpStop = false;
         boolean drive = true;
         double popperUp = 0.24;
         double popperDown = 0.07;
@@ -58,9 +58,6 @@ public class DRTeleOp extends OpMode
         {
 
 
-            if(gamepad1.guide) {
-                guide = !guide;
-            }
             if(gamepad1.dpad_down){
                 drive = false;
             }
@@ -138,26 +135,41 @@ public class DRTeleOp extends OpMode
                 throttleLeft = 0;
             }
 
-            if(gamepad2.b){
+            if(gamepad2.b && bBpStop == false){
                 bBPvalue += .005;
             }
-            if(gamepad2.x){
+            if(gamepad2.x && bBpStop == false){
                 bBPvalue -= .005;
             }
+            if (gamepad2.a)
+            {   bBpStop = true;
+                bBPvalue = 0.01;
+                bBP.setPosition(bBPvalue);
+                sleep(500);
+
+            }
+            if (!gamepad2.a)
+            {
+                bBpStop = false;
+            }
+
+
 
             // Scales the  variable throttleLeft exponentially
 
 
-            if (guide) {
-                throttleLeft = throttleLeft * (float).5;
-                throttleRight = throttleRight * (float).5;
-                throttleLeft = throttleLeft * (float)throttleScalingLeft;
-                throttleRight = throttleRight * (float)throttleScalingRight;
+            if (gamepad1.b) {
+                throttleScalingLeft = 0.5;
+                throttleScalingRight = 0.5;
+
             }
-            if (!guide){
-                throttleLeft = throttleLeft * (float)throttleScalingLeft;
-                throttleRight = throttleRight * (float)throttleScalingRight;
+            if (gamepad1.a){
+                throttleScalingLeft = 1;
+                throttleScalingRight = 1;
+
             }
+            throttleLeft = throttleLeft * (float)throttleScalingLeft;
+            throttleRight = throttleRight * (float)throttleScalingRight;
 
             if(drive){
                 motorLF.setPower(-throttleLeft);
@@ -175,8 +187,8 @@ public class DRTeleOp extends OpMode
             bBP.setPosition(bBPvalue);
             //popper.setPosition(popperUp);
 
+
             telemetry.addData("bBP", bBPvalue);
-            telemetry.addData("Guide", guide);
             telemetry.addData("Drive", drive);
             telemetry.addData("Popper Pos", popper.getPosition());
             // Sets the appropriate motors to the appropriate variables
@@ -186,6 +198,15 @@ public class DRTeleOp extends OpMode
 
 
 
+        }
+
+        public static void sleep(int amt) // In milliseconds
+        {
+            double a = System.currentTimeMillis();
+            double b = System.currentTimeMillis();
+            while ((b - a) <= amt) {
+                b = System.currentTimeMillis();
+            }
         }
 
     }

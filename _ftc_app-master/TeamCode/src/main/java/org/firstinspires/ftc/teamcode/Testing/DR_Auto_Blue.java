@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.robocol.RobocolDatagramSocket;
 
 /**
  * Created by RoboticsUser on 10/13/2016.
@@ -26,7 +27,7 @@ public class DR_Auto_Blue extends Camera_Testing {
     ColorSensor colorSensorR;
     OpticalDistanceSensor ODS;
 
-    enum States {TURN, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON, DRIVE_FORWARD2}
+    enum States {TURN, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON, DRIVE_FORWARD2, STOP}
 
     States state;
 
@@ -74,7 +75,15 @@ public class DR_Auto_Blue extends Camera_Testing {
         super.init();
 
     }
+    public void start(){
+        colorSensorL.enableLed(false);
+        sleep(10);
+        colorSensorL.enableLed(true);
+        colorSensorR.enableLed(false);
+        sleep(10);
+        colorSensorR.enableLed(true);
 
+    }
     public void loop()
     {
         R = readAvgHue(colorSensorL);
@@ -87,7 +96,7 @@ public class DR_Auto_Blue extends Camera_Testing {
 
 
             case DRIVE_FORWARD1:
-                if (motorLB.getCurrentPosition() < -1500)
+                if (motorLB.getCurrentPosition() < -1593)
                 {
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
@@ -117,7 +126,7 @@ public class DR_Auto_Blue extends Camera_Testing {
                 }
                 break;
             case TURN:
-                if(motorLB.getCurrentPosition() < 2000)
+                if(motorLB.getCurrentPosition() < 1200)
                 {
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
@@ -144,14 +153,14 @@ public class DR_Auto_Blue extends Camera_Testing {
                 break;
 
             case DRIVE_FORWARD2:
-                if (motorLB.getCurrentPosition() < -2000)
+                if (L <= WhiteMaxValL && L >= WhiteMinValL && motorRB.getCurrentPosition() < -2500)
                 {
 
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
                     motorLB.setPower(0.0);
-                    state = States.TURN_TO_LINE1;
+                    state = States.STOP;
                     motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -369,6 +378,13 @@ public class DR_Auto_Blue extends Camera_Testing {
 
                     //Position for Left Side of Beacon
                 }
+                state = States.STOP;
+                break;
+            case STOP:
+                motorRB.setPower(0.0);
+                motorRF.setPower(0.0);
+                motorLB.setPower(0.0);
+                motorLF.setPower(0.0);
                 break;
         }
         //telemetry.update();
