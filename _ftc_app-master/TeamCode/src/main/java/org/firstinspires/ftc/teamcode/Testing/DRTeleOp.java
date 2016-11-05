@@ -57,6 +57,7 @@ public class DRTeleOp extends OpMode
         public void loop()
         {
 
+
             if(gamepad1.guide) {
                 guide = !guide;
             }

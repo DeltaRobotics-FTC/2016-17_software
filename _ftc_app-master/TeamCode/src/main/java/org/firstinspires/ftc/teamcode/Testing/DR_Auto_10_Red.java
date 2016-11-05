@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.Testing;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 
 /**
  * Created by RoboticsUser on 11/1/2016.
@@ -27,6 +29,7 @@ public class DR_Auto_10_Red extends OpMode
     }
     public void loop()
     {
+
         switch (state)
         {
             case DRIVE1:

@@ -15,6 +15,8 @@ public class DR_Auto_10_Blue extends OpMode
     DcMotor motorRF;
     DcMotor motorRB;
 
+
+
     enum states {DRIVE1, STOP, TURN, DRIVE2}
     states state;
 
@@ -27,6 +29,7 @@ public class DR_Auto_10_Blue extends OpMode
     }
     public void loop()
     {
+
         switch (state)
         {
             case DRIVE1:
@@ -59,10 +62,14 @@ public class DR_Auto_10_Blue extends OpMode
                 break;
 
             case TURN:
-                if(motorRB.getCurrentPosition() < 1250)
+                if(motorRB.getCurrentPosition() < 0)
                 {
-                    motorRF.setPower(0.9);
+                    /*motorRF.setPower(0.9);
                     motorRB.setPower(0.9);
+                    motorLF.setPower(0.0);
+                    motorLB.setPower(0.0);
+                    */motorRF.setPower(0.0);
+                    motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
                     motorLB.setPower(0.0);
                     telemetry.addData("Position LF", motorLF.getCurrentPosition());
@@ -83,8 +90,9 @@ public class DR_Auto_10_Blue extends OpMode
                 }
                 break;
             case DRIVE2:
-                if (motorLB.getCurrentPosition() < -1500)
+                if (motorLB.getCurrentPosition() < -3000)
                 {
+                    // Previous value was -1500
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
