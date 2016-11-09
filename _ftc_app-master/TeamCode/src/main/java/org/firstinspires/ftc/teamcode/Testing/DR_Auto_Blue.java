@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.robocol.RobocolDatagramSocket;
 
 /**
  * Created by RoboticsUser on 10/13/2016.
@@ -27,22 +26,23 @@ public class DR_Auto_Blue extends Camera_Testing {
     ColorSensor colorSensorR;
     OpticalDistanceSensor ODS;
 
-    enum States {TURN, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON, DRIVE_FORWARD2, STOP}
+    enum States {TURN, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON, DRIVE_FORWARD2, STOP, DRIVE_FORWARD3}
 
     States state;
 
     float L;
     float R;
     double O;
-    final int WhiteMaxValR = 716;
-    final int WhiteMinValR = 700;
-    final int WhiteMaxValL = 1084;
-    final int WhiteMinValL = 1070;
+    final int WhiteMaxValR = 2000;
+    final int WhiteMinValR = 50;
+    final int WhiteMaxValL = 2000;
+    final int WhiteMinValL = 50;
     final double ODSStopLoopVal = 0.25;
 
-    private int ds2 = 2;
+
+    int ds2 = 2;
     int bBPP;
-    int followCnt = 100000000;
+    int followCount = 100000000;
 
     public void init() {
 
@@ -67,7 +67,7 @@ public class DR_Auto_Blue extends Camera_Testing {
         colorSensorL.enableLed(true);
         colorSensorR.enableLed(true);
 
-        state = States.DRIVE_FORWARD1;
+        state = States.TURN;
 
 
 
@@ -92,9 +92,6 @@ public class DR_Auto_Blue extends Camera_Testing {
 
         switch (state) {
 
-
-
-
             case DRIVE_FORWARD1:
                 if (motorLB.getCurrentPosition() < -1593)
                 {
@@ -118,7 +115,7 @@ public class DR_Auto_Blue extends Camera_Testing {
                     motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
                     motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
                     motorRF.setPower(0.25);
-                    motorRB.setPower(-0.25);
+                    motorRB.setPower(0.25);
                     motorLF.setPower(-0.25);
                     motorLB.setPower(-0.25);
                     //this is a comment
@@ -126,12 +123,12 @@ public class DR_Auto_Blue extends Camera_Testing {
                 }
                 break;
             case TURN:
-                if(motorLB.getCurrentPosition() < 1200)
+                if(motorRB.getCurrentPosition() < 950)
                 {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.25);
-                    motorLB.setPower(0.25);
+                    motorRF.setPower(0.25);
+                    motorRB.setPower(0.25);
+                    motorLF.setPower(0.0);
+                    motorLB.setPower(0.0);
                     //telemetry.addData("Case:","Turn");
                     telemetry.addData("Position LF", motorLF.getCurrentPosition());
                     telemetry.addData("Position LB", motorLB.getCurrentPosition());
@@ -153,14 +150,16 @@ public class DR_Auto_Blue extends Camera_Testing {
                 break;
 
             case DRIVE_FORWARD2:
-                if (L <= WhiteMaxValL && L >= WhiteMinValL && motorRB.getCurrentPosition() < -2500)
+                colorSensorL.enableLed(true);
+                colorSensorR.enableLed(true);
+                if ((L < WhiteMaxValL && L > WhiteMinValL) || (R < WhiteMaxValR && R > WhiteMinValR) || motorRB.getCurrentPosition() > 3500)
                 {
 
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
                     motorLB.setPower(0.0);
-                    state = States.STOP;
+                    state = States.DRIVE_FORWARD3;
                     motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -169,23 +168,50 @@ public class DR_Auto_Blue extends Camera_Testing {
                 else
                 {
                     motorRF.setPower(0.25);
-                    motorRB.setPower(-0.25);
+                    motorRB.setPower(0.25);
                     motorLF.setPower(-0.25);
                     motorLB.setPower(-0.25);
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
                     telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
                     telemetry.addData("Position RB", motorRB.getCurrentPosition());
+                    telemetry.addData("Left (R)", R);
+                    telemetry.addData("Right (L)", L);
                 }
                 break;
 
 
+            case DRIVE_FORWARD3:
+                if (motorRB.getCurrentPosition() > 100)
+                {
+
+                    motorRF.setPower(0.0);
+                    motorRB.setPower(0.0);
+                    motorLF.setPower(0.0);
+                    motorLB.setPower(0.0);
+                    state = States.TURN_TO_LINE1;
+                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
+                else
+                {
+                    motorRF.setPower(0.25);
+                    motorRB.setPower(0.25);
+                    motorLF.setPower(-0.25);
+                    motorLB.setPower(-0.25);
+                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
+                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
+                    telemetry.addData("Left (R)", R);
+                    telemetry.addData("Right (L)", L);
+                }
+                break;
+
             case TURN_TO_LINE1:
                 colorSensorL.enableLed(true);
                 colorSensorR.enableLed(true);
-                if (R <= WhiteMaxValR && R >= WhiteMinValR)
+                if (L < WhiteMaxValR && L > WhiteMinValR)
                 {
-                    telemetry.addData("R", R);
+                    telemetry.addData("Right (L)", L);
                     telemetry.addData("Alpha", colorSensorR.alpha());
 
                     motorRB.setPower(0.0);
@@ -193,24 +219,24 @@ public class DR_Auto_Blue extends Camera_Testing {
                     motorLB.setPower(0.0);
                     motorLF.setPower(0.0);
                     sleep(1000);
-                    state = States.TURN_TO_LINE2;
+                    state = States.LINE_FOLOWING;
                 }
                 else
                 {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.25);
-                    motorLB.setPower(0.25);
-                    telemetry.addData("R", R);
+                    motorRF.setPower(0.25);
+                    motorRB.setPower(0.25);
+                    motorLF.setPower(0.0);
+                    motorLB.setPower(0.0);
+                    telemetry.addData("Right (L)", L);
                     telemetry.addData("Alpha", colorSensorR.alpha());
                 }
             break;
 
             case TURN_TO_LINE2:
-                telemetry.addData("R", R);
+                telemetry.addData("Left (R)", R);
                 telemetry.addData("Alpha", colorSensorR.alpha());
 
-                if (L <= WhiteMaxValL && L >= WhiteMinValL)
+                if (R <= WhiteMaxValR && R >= WhiteMinValR)
                 {
                     motorRB.setPower(0.0);
                     motorRF.setPower(0.0);
@@ -222,10 +248,10 @@ public class DR_Auto_Blue extends Camera_Testing {
                 }
                 else
                 {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.25);
-                    motorLB.setPower(0.25);
+                    motorRF.setPower(0.25);
+                    motorRB.setPower(0.25);
+                    motorLF.setPower(0.0);
+                    motorLB.setPower(0.0);
                 }
                 break;
 
@@ -233,7 +259,7 @@ public class DR_Auto_Blue extends Camera_Testing {
 
 
                         if (O < ODSStopLoopVal) {
-                            followCnt--;
+                            followCount--;
 
                             L = readAvgHue(colorSensorL);
                             R = readAvgHue(colorSensorR);
@@ -347,13 +373,13 @@ public class DR_Auto_Blue extends Camera_Testing {
                             colorStringRight = "BLUE";
                     }
 
-                    if (colorStringLeft == "BLUE") {
+                    if (colorStringLeft.equals("BLUE")) {
                         bBPP = 0;
                         //0 = Left
                         state = States.PRESS_BUTTON;
                         break;
                     }
-                    else if (colorStringRight == "BLUE") {
+                    else if (colorStringRight.equals("BLUE")) {
                         bBPP = 1;
                         //1 = Right
                         state = States.PRESS_BUTTON;
@@ -426,7 +452,7 @@ public class DR_Auto_Blue extends Camera_Testing {
         double averagedRawLight = 0;
         for (int i = 0; i < 100; ++i )
         {
-            averagedRawLight += ODS.getRawLightDetected();;
+            averagedRawLight += ODS.getRawLightDetected();
         }
 
         averagedRawLight /= 100;
