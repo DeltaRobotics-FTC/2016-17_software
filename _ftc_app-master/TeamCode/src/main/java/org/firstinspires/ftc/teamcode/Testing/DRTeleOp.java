@@ -18,6 +18,7 @@ public class DRTeleOp extends OpMode
         DcMotor motorLF;
         DcMotor motorLB;
         DcMotor launcherWheel;
+        DcMotor collector;
         Servo popper;
         Servo bBP;
         float throttleLeft = 0;
@@ -36,6 +37,9 @@ public class DRTeleOp extends OpMode
         long time = 0;
         int launcherE = 0;
         double rps = 0;
+        boolean collectorVar = false;
+        double collectorPower = 1;
+
 
         boolean test = true;
 
@@ -53,6 +57,7 @@ public class DRTeleOp extends OpMode
             motorLB = hardwareMap.dcMotor.get("motorLB");
             motorRB = hardwareMap.dcMotor.get("motorRB");
             bBP = hardwareMap.servo.get("bBP");
+            collector = hardwareMap.dcMotor.get("collector");
             launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
             popper = hardwareMap.servo.get("popper");
             popper.setPosition(popperDown);
@@ -77,6 +82,22 @@ public class DRTeleOp extends OpMode
                 if (gamepad2.left_bumper) {
                     bumper = false;
                 }
+            if (gamepad2.dpad_up)
+            {
+                collectorVar = true;
+            }
+            if (!gamepad2.dpad_down)
+            {
+                collectorVar =false;
+            }
+            if (collectorVar)
+            {
+                collector.setPower(collectorPower);
+            }
+            if (!collectorVar)
+            {
+                collector.setPower(0);
+            }
 
                 if (bumper) {
                     if (test) {
