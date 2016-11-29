@@ -24,10 +24,10 @@ public class DRTeleOp extends OpMode
         float throttleRight = 0;
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
-        double bBPvalue = 0.01;
+        double bBPvalue = 0.079;
         boolean bBpStop = false;
         boolean drive = true;
-        double popperUp = 0.14;
+        double popperUp = 0.17;
         double popperDown = 0.0;
         boolean bumper = false;
 
@@ -83,7 +83,7 @@ public class DRTeleOp extends OpMode
                         constant = System.currentTimeMillis();
                         test = false;
                     }
-                    launcherWheel.setPower(.45);
+                    launcherWheel.setPower(.42);
                 }
 
                 if (!bumper) {
@@ -142,13 +142,22 @@ public class DRTeleOp extends OpMode
                 }
                 if (gamepad2.a) {
                     bBpStop = true;
-                    bBPvalue = 0.01;
+                    bBPvalue = 0.0079;
                     bBP.setPosition(bBPvalue);
                     sleep(500);
                 }
                 if (!gamepad2.a) {
                     bBpStop = false;
                 }
+            if (gamepad2.y) {
+                bBpStop = true;
+                bBPvalue = 0.765;
+                bBP.setPosition(bBPvalue);
+                sleep(500);
+            }
+            if (!gamepad2.a) {
+                bBpStop = false;
+            }
 
 
                 // Scales the  variable throttleLeft exponentially
@@ -178,23 +187,28 @@ public class DRTeleOp extends OpMode
                 }
 
                 bBP.setPosition(bBPvalue);
-                popper.setPosition(popperUp);
 
 
                 telemetry.addData("bBP", bBPvalue);
                 telemetry.addData("Drive", drive);
                 telemetry.addData("Popper Pos", popper.getPosition());
+                telemetry.addData("Constant", constant);
                 // Sets the appropriate motors to the appropriate variables
 
-            current = System.currentTimeMillis();
-            time = current - constant;
-            launcherE = launcherWheel.getCurrentPosition();
-            time /= 1000;
-            //time is in seconds
-            launcherE /= 140;
-            //launcherE is in rotations
-            rps = launcherE/time;
-            telemetry.addData("RPS", rps);
+            if(System.currentTimeMillis() - constant > 1000) {
+                current = System.currentTimeMillis();
+                time = current - constant;
+                launcherE = motorLF.getCurrentPosition();
+                telemetry.addData("Launcher Encoder", motorLF.getCurrentPosition());
+                telemetry.addData("Right Front", motorRF);
+                time /= 1000;
+                //time is in seconds
+                launcherE /= 140;
+                telemetry.addData("Launcher Rotations", launcherE);
+                //launcherE is in rotations
+                rps = launcherE / time;
+                telemetry.addData("RPS", rps);
+            }
         }
 
         public static void sleep(int amt) // In milliseconds

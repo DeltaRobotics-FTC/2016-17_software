@@ -19,20 +19,32 @@ public class DR_Auto_10_Blue extends OpMode
     DcMotor launcherWheel;
     Servo popper;
 
-    long b = 0;
+    double constant = 0;
+    int lastE = 0;
+    int encoderCount;
+    int cps = 0;
+    long a2 = 0;
+    long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.14;
+    double popperUp = 0.14 ;
     double popperDown = 0.0;
 
+    int x = 0;
+    int count = 0;
+    int rev = 0;
     boolean test = true;
     boolean test1 = true;
+    boolean testloop = true;
+    boolean test3 = true;
 
-    enum states {DRIVE1, STOP, TURN, DRIVE2, SHOOT1, SHOOT2}
+    double launcherPower = 0;
+
+    enum states {DRIVE1, STOP, TURN, DRIVE2, SHOOT1, SHOOT2, SHOOT}
     states state;
 
     public void init() {
-        state = states.SHOOT1;
+        state = states.SHOOT;
         motorLB = hardwareMap.dcMotor.get("motorLB");
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorRB = hardwareMap.dcMotor.get("motorRB");
@@ -45,65 +57,109 @@ public class DR_Auto_10_Blue extends OpMode
     }
     public void loop()
     {
+        if (testloop) {
+            constant = System.currentTimeMillis();
+            testloop = false;
+        }
+        if(System.currentTimeMillis() - constant > 100)
+        {
+            rev++;
+            constant = System.currentTimeMillis();
+            encoderCount = motorLF.getCurrentPosition() - lastE;
+            lastE = motorLF.getCurrentPosition();
+            cps = encoderCount * 10;
+
+        }
+        telemetry.addData("Rev", rev);
+        telemetry.addData("Encoder Position", motorLF.getCurrentPosition());
+        telemetry.addData("CPS", cps);
+        telemetry.addData("Launcher Power", launcherWheel.getPower());
+
 
         switch (state)
         {
-            case SHOOT1:
+            case SHOOT:
+            {
                 if(test)
                 {
                     c = System.currentTimeMillis();
                     test = false;
+                    launcherPower = .4;
+                    launcherWheel.setPower(launcherPower);
                 }
-                launcherWheel.setPower(.40);
                 a = System.currentTimeMillis();
-                if((a - c) < 5000)
+                if((a - c) < 2000)
                 {
                     break;
                 }
-                else {
-                    if(test1)
+                else
+                {
+                    if(count < 2)
                     {
-                        c = System.currentTimeMillis();
-                        test1 = false;
-                    }
-                    popper.setPosition(popperUp);
-                    b = System.currentTimeMillis();
-                    if ((b - c) > 2000) {
-                        launcherWheel.setPower(0.0);
-                        popper.setPosition(popperDown);
+                        if (cps > 1800 && cps < 1900) {
+                            count++;
+                            state = states.SHOOT2;
+                        }
+                        else
+                        {
+                            if(test3)
+                            {
+                                c2 = System.currentTimeMillis();
+                                test3 = false;
+                            }
+                            a2 = System.currentTimeMillis();
+                            if((a2 - c2) < 500)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                if (cps > 1900) {
+                                    launcherPower = launcherPower - .01;
+                                }
+                                if (cps < 1800) {
+                                    launcherPower = launcherPower + .01;
+                                }
+                                launcherWheel.setPower(launcherPower);
+                                test3 = true;
+                            }
+
+                            break;
+                        }
+
                         test = true;
-                        test1 = true;
-                        state = states.SHOOT2;
+                    }
+                    else
+                    {
+                        launcherWheel.setPower(0);
+                        state = states.DRIVE2;
+                        break;
                     }
                     break;
                 }
+            }
 
             case SHOOT2:
-                if(test)
+                if(test1)
                 {
                     c = System.currentTimeMillis();
-                    test = false;
+                    test1 = false;
                 }
-                launcherWheel.setPower(.40);
+                popper.setPosition(popperUp);
                 a = System.currentTimeMillis();
-                if((a - c) < 3000)
+                if((a - c) < 1000)
                 {
                     break;
                 }
-                else {
-                    if(test1)
-                    {
-                        c = System.currentTimeMillis();
-                        test1 = false;
-                    }
-                    popper.setPosition(popperUp);
-                    b = System.currentTimeMillis();
-                    if ((b - c) > 2000) {
-                        launcherWheel.setPower(0.0);
-                        state = states.DRIVE2;
-                    }
-                    break;
+                else
+                {
+                    popper.setPosition(popperDown);
+                    state = states.SHOOT;
+                    test = true;
+                    test1 = true;
                 }
+                    break;
+
 
             case DRIVE1:
                 if (motorLB.getCurrentPosition() < -300)
@@ -159,7 +215,7 @@ public class DR_Auto_10_Blue extends OpMode
                 }
                 break;
             case DRIVE2:
-                if (motorLB.getCurrentPosition() > 3000)
+                if (motorLB.getCurrentPosition() > 2000)
                 {
                     // Previous value was -1500
                     motorRF.setPower(0.0);

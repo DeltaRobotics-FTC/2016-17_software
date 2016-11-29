@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
  * Created by RoboticsUser on 10/29/2016.
  */
-@Autonomous (name = "ODS_Test", group = "")
+//@Autonomous (name = "ODS_Test", group = "")
 public class ODS_Test extends OpMode
     {
         OpticalDistanceSensor ODS;

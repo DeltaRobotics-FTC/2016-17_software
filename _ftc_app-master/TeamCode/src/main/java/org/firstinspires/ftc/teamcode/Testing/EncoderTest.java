@@ -10,7 +10,7 @@ import com.qualcomm.ftcrobotcontroller.R;
 /**
  * Created by Delta on 10/20/2016.
  */
-@Autonomous (name = "Encoder_Test", group = "")
+//@Autonomous (name = "Encoder_Test", group = "")
 public class EncoderTest extends OpMode
 {
 

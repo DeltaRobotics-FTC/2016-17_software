@@ -16,110 +16,59 @@ public class DR_Auto_10_Red extends OpMode
     DcMotor motorLB;
     DcMotor motorRF;
     DcMotor motorRB;
+    boolean finished = false;
 
     enum states {DRIVE1, STOP, TURN, DRIVE2}
     states state;
 
     public void init() {
         state = states.TURN;
-        motorLB = hardwareMap.dcMotor.get("motorLB");
-        motorLF = hardwareMap.dcMotor.get("motorLF");
+//        motorLB = hardwareMap.dcMotor.get("motorLB");
+//        motorLF = hardwareMap.dcMotor.get("motorLF");
         motorRB = hardwareMap.dcMotor.get("motorRB");
-        motorRF = hardwareMap.dcMotor.get("motorRF");
+//        motorRF = hardwareMap.dcMotor.get("motorRF");
     }
-    public void loop()
-    {
 
-        switch (state)
-        {
-            case DRIVE1:
-                if (motorLB.getCurrentPosition() < -300)
-                {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    state = states.TURN;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                else
-                {
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                    motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorRF.setPower(0.6);
-                    motorRB.setPower(-0.6);
-                    motorLF.setPower(-0.6);
-                    motorLB.setPower(-0.6);
-                    break;
-                }
-                break;
-
-            case TURN:
-                if(motorLB.getCurrentPosition() > -1000)
-                {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(-0.9);
-                    motorLB.setPower(-0.9);
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                }
-                else{
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    state = states.DRIVE2;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                break;
-            case DRIVE2:
-                if (motorLB.getCurrentPosition() < -1500)
-                {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    state = states.STOP;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                else
-                {
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                    motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorRF.setPower(0.6);
-                    motorRB.setPower(-0.6);
-                    motorLF.setPower(-0.6);
-                    motorLB.setPower(-0.6);
-                    break;
-                }
-                break;
-            case STOP:
-                motorRF.setPower(0.0);
-                motorRB.setPower(0.0);
-                motorLF.setPower(0.0);
-                motorLB.setPower(0.0);
-                break;
+    public void loop() {
+        if (!finished) {
+            telemetry.addData("Status", "Finished initialization");
+            move(0.25, 0.25, 0.25, 0.25, 1000, motorRB);
+            move(0.25, 0.25, -0.25, -0.25, 500, motorRB);
+            move(-0.25, -0.25, -0.25, -0.25, 250, motorRB);
+            finished = true;
         }
+    }
 
+    private void move(double rbSpeed, double rfSpeed, double lbSpeed, double lfSpeed) {
+        motorRB.setPower(rbSpeed);
+//        motorRF.setPower(rfSpeed);
+//        motorLB.setPower(-lbSpeed);
+//        motorLF.setPower(-lfSpeed);
+        sendMotorTelemetry();
+    }
+
+    private void move(double rbSpeed, double rfSpeed, double lbSpeed, double lfSpeed, int encoderTarget, DcMotor encoderMotor) {
+        encoderMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        encoderMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        while (Math.abs(encoderMotor.getCurrentPosition()) < Math.abs(encoderTarget)) {
+            move(rbSpeed, rfSpeed, lbSpeed, lfSpeed);
+        }
+        stopMotors();
+    }
+
+    private void move(double rbSpeed, double rfSpeed, double lbSpeed, double lfSpeed, int millis) {
+        // TODO
+    }
+
+    private void stopMotors() {
+        move(0, 0, 0, 0);
+    }
+
+    private void sendMotorTelemetry() {
+//        telemetry.addData("MotorLF", motorLF.getCurrentPosition());
+//        telemetry.addData("MotorLB", motorLB.getCurrentPosition());
+//        telemetry.addData("MotorRF", motorRF.getCurrentPosition());
+        telemetry.addData("MotorRB", motorRB.getCurrentPosition());
+        telemetry.update();
     }
 }

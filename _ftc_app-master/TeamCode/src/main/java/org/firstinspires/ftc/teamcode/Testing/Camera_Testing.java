@@ -6,7 +6,7 @@ import for_camera_opmodes.OpModeCamera;
 /**
  * Created by RoboticsUser on 12/29/2015.
  */
-@Autonomous(name = "Camera_Testing_Op", group = "SensorTesting")
+//@Autonomous(name = "Camera_Testing_Op", group = "SensorTesting")
 
 public class Camera_Testing extends OpModeCamera{
     private int looped = 0;
