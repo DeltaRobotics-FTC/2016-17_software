@@ -36,9 +36,11 @@ public class DRTeleOp extends OpMode
         long current = 0;
         long time = 0;
         int launcherE = 0;
-        double rps = 0;
+        double rpm = 0;
         boolean collectorVar = false;
-        double collectorPower = 1;
+        double launcherPower = 0.36;
+        boolean dPadLeftState = false;
+        boolean dPadRightState = false;
 
 
         boolean test = true;
@@ -86,17 +88,38 @@ public class DRTeleOp extends OpMode
             {
                 collectorVar = true;
             }
-            if (!gamepad2.dpad_down)
+            if (gamepad2.dpad_down)
             {
-                collectorVar =false;
+                collectorVar = false;
             }
             if (collectorVar)
             {
-                collector.setPower(collectorPower);
+                collector.setPower(-0.4);
             }
             if (!collectorVar)
             {
+
                 collector.setPower(0);
+            }
+
+            if (gamepad2.dpad_left && dPadLeftState == false)
+            {
+                dPadLeftState = true;
+                launcherPower -= 0.05;
+            }
+            else if (!gamepad2.dpad_left)
+            {
+                dPadLeftState = false;
+            }
+
+            if (gamepad2.dpad_right && dPadRightState == false)
+            {
+                dPadRightState = true;
+                launcherPower += 0.05;
+            }
+            else if (!gamepad2.dpad_right)
+            {
+                dPadRightState = false;
             }
 
                 if (bumper) {
@@ -104,7 +127,7 @@ public class DRTeleOp extends OpMode
                         constant = System.currentTimeMillis();
                         test = false;
                     }
-                    launcherWheel.setPower(.42);
+                    launcherWheel.setPower(launcherPower);
                 }
 
                 if (!bumper) {
@@ -214,6 +237,8 @@ public class DRTeleOp extends OpMode
                 telemetry.addData("Drive", drive);
                 telemetry.addData("Popper Pos", popper.getPosition());
                 telemetry.addData("Constant", constant);
+                telemetry.addData("launcherrPower", launcherPower);
+                telemetry.addData("collectorStatus", collectorVar);
                 // Sets the appropriate motors to the appropriate variables
 
             if(System.currentTimeMillis() - constant > 1000) {
@@ -227,8 +252,8 @@ public class DRTeleOp extends OpMode
                 launcherE /= 140;
                 telemetry.addData("Launcher Rotations", launcherE);
                 //launcherE is in rotations
-                rps = launcherE / time;
-                telemetry.addData("RPS", rps);
+                rpm = 60 * launcherE / time;
+                telemetry.addData("RPM", rpm);
             }
         }
 

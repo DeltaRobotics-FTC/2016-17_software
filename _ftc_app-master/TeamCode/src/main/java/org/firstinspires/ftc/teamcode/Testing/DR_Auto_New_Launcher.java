@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 11/1/2016.
  */
-@Autonomous (name = "DR_Auto_10_Blue", group = "")
+@Autonomous (name = "DR_Auto_New_Launcher", group = "")
 public class DR_Auto_New_Launcher extends OpMode
 {
     DcMotor motorLF;
@@ -31,14 +31,16 @@ public class DR_Auto_New_Launcher extends OpMode
     double popperDown = 0.0;
 
     int x = 0;
-    int count = 0;
+    int count = 1;
     int rev = 0;
     boolean test = true;
     boolean test1 = true;
     boolean testloop = true;
     boolean test3 = true;
+    boolean test4 = true;
 
     double launcherPower = 0;
+    double collectorPower = -0.4;
 
     enum states {STOP, DRIVE, DRIVE2, SHOOT2, SHOOT}
     states state;
@@ -79,18 +81,19 @@ public class DR_Auto_New_Launcher extends OpMode
         switch (state)
         {
             case DRIVE:
-                if (motorLB.getCurrentPosition() > 750)
+                if (motorLB.getCurrentPosition() > 1000)
                 {
                     // Previous value was -1500
                     motorRF.setPower(0.0);
                     motorRB.setPower(0.0);
                     motorLF.setPower(0.0);
                     motorLB.setPower(0.0);
-                    state = states.STOP;
+                    state = states.SHOOT;
                     motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    resetEncoder(collector);
                 }
                 else
                 {
@@ -128,7 +131,7 @@ public class DR_Auto_New_Launcher extends OpMode
                 {
                     if(count < 2)
                     {
-                        if (cps > 1800 && cps < 1900) {
+                        if (cps > 2000 && cps < 2100) {
                             count++;
                             state = states.SHOOT2;
                         }
@@ -146,10 +149,10 @@ public class DR_Auto_New_Launcher extends OpMode
                             }
                             else
                             {
-                                if (cps > 1900) {
+                                if (cps > 2100) {
                                     launcherPower = launcherPower - .01;
                                 }
-                                if (cps < 1800) {
+                                if (cps < 2000) {
                                     launcherPower = launcherPower + .01;
                                 }
                                 launcherWheel.setPower(launcherPower);
@@ -164,6 +167,7 @@ public class DR_Auto_New_Launcher extends OpMode
                     else
                     {
                         launcherWheel.setPower(0);
+                        collector.setPower(0.0);
                         state = states.DRIVE2;
                         break;
                     }
@@ -177,15 +181,48 @@ public class DR_Auto_New_Launcher extends OpMode
                     c = System.currentTimeMillis();
                     test1 = false;
                 }
-                popper.setPosition(popperUp);
+                    if (test4)
+                    {
+                        collector.setPower(collectorPower);
+                        a = System.currentTimeMillis();
+                        if((a - c) < 500)
+                        {
+                            break;
+                        }
+                        collector.setPower(0);
+                        resetEncoder(collector);
+                        test4 = false;
+                        a = System.currentTimeMillis();
+                        if((a - c) < 1000)
+                        {
+                            break;
+                        }
+                    }
+
+                if (test4 == false)
+                {
+                    collector.setPower(collectorPower);
+                    a = System.currentTimeMillis();
+                    if((a - c) < 2000)
+                    {
+                        break;
+                    }
+                    collector.setPower(0);
+                    resetEncoder(collector);
+                }
+
                 a = System.currentTimeMillis();
-                if((a - c) < 1000)
+                if((a - c) < 3000)
                 {
                     break;
                 }
                 else
                 {
-                    popper.setPosition(popperDown);
+                    a = System.currentTimeMillis();
+                    if((a - c) < 1000)
+                    {
+                        break;
+                    }
                     state = states.SHOOT;
                     test = true;
                     test1 = true;
@@ -194,7 +231,7 @@ public class DR_Auto_New_Launcher extends OpMode
 
             case DRIVE2:
                 sleep(1500);
-                if (motorLB.getCurrentPosition() > 1250)
+                if (motorLB.getCurrentPosition() > 1000)
                 {
                     // Previous value was -1500
                     motorRF.setPower(0.0);
@@ -230,10 +267,22 @@ public class DR_Auto_New_Launcher extends OpMode
                 motorRB.setPower(0.0);
                 motorLF.setPower(0.0);
                 motorLB.setPower(0.0);
+                collector.setPower(0.0);
                 break;
         }
 
+        telemetry.addData("currentState", state);
+        telemetry.addData("collectorCurrentPos", collector.getCurrentPosition());
+
+
     }
+    public static void resetEncoder(DcMotor TheMotor)
+    {
+
+        TheMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        TheMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
 
     public static void sleep(int amt) // In milliseconds
     {
