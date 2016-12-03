@@ -17,29 +17,37 @@ public class DR_Auto_New_Launcher extends OpMode
     DcMotor motorRB;
     DcMotor collector;
     DcMotor launcherWheel;
-    Servo popper;
 
-    double constant = 0;
     int lastE = 0;
     int encoderCount;
     int cps = 0;
-    long a2 = 0;
-    long c2 = 0;
-    long c = 0;
-    long a = 0;
-    double popperUp = 0.14 ;
-    double popperDown = 0.0;
+    long updatingCurrentT2 = 0;
+    // Second version of updatingCurrentT
+    long currentT2 = 0;
+    // Second version of currentT
+    long currentT = 0;
+    // current time in millis read
+    long updatingCurrentT = 0;
+    // Current time in millis read that continues to read
+    /*
+        double popperUp = 0.14 ;
+        double popperDown = 0.0;
+    */
 
-    int x = 0;
-    int count = 1;
+    int count = 0;
     int rev = 0;
-    boolean test = true;
-    boolean test1 = true;
-    boolean testloop = true;
-    boolean test3 = true;
-    boolean test4 = true;
+    boolean runOnce1 = true;
+    boolean runOnce2 = true;
+    boolean runOnce3 = true;
+    boolean runOnce4 = true;
+    boolean runOnce5 = true;
+    boolean runOnce6 = true;
+    boolean runOnce7 = true;
+    boolean runOnce8 = true;
+    boolean runOnce9 = true;
 
-    double launcherPower = 0;
+
+    double launcherPower = 0.4;
     double collectorPower = -0.4;
 
     enum states {STOP, DRIVE, DRIVE2, SHOOT2, SHOOT}
@@ -53,20 +61,19 @@ public class DR_Auto_New_Launcher extends OpMode
         motorRF = hardwareMap.dcMotor.get("motorRF");
         collector = hardwareMap.dcMotor.get("collector");
         launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
-        popper = hardwareMap.servo.get("popper");
-        popper.setPosition(popperDown);
+        resetEncoder(motorLB);
+        resetEncoder(motorRB);
+        resetEncoder(collector);
 
     }
-    public void loop()
-    {
-        if (testloop) {
-            constant = System.currentTimeMillis();
-            testloop = false;
+    public void loop() {
+        if (runOnce1) {
+            currentT = System.currentTimeMillis();
+            runOnce1 = false;
         }
-        if(System.currentTimeMillis() - constant > 100)
-        {
+        if (System.currentTimeMillis() - currentT > 100) {
             rev++;
-            constant = System.currentTimeMillis();
+            currentT = System.currentTimeMillis();
             encoderCount = motorLF.getCurrentPosition() - lastE;
             lastE = motorLF.getCurrentPosition();
             cps = encoderCount * 10;
@@ -78,25 +85,16 @@ public class DR_Auto_New_Launcher extends OpMode
         telemetry.addData("Launcher Power", launcherWheel.getPower());
 
 
-        switch (state)
-        {
+        switch (state) {
             case DRIVE:
-                if (motorLB.getCurrentPosition() > 1000)
-                {
+                if (motorLB.getCurrentPosition() > 1000) {
                     // Previous value was -1500
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
+                    stopMotors(motorLB, motorLF, motorRB, motorRF);
                     state = states.SHOOT;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    resetEncoder(motorLB);
+                    resetEncoder(motorRB);
                     resetEncoder(collector);
-                }
-                else
-                {
+                } else {
                     telemetry.addData("Position LF", motorLF.getCurrentPosition());
                     telemetry.addData("Position LB", motorLB.getCurrentPosition());
                     telemetry.addData("Position RF", motorRF.getCurrentPosition());
@@ -112,43 +110,29 @@ public class DR_Auto_New_Launcher extends OpMode
                 break;
 
 
-
-            case SHOOT:
-            {
-                if(test)
-                {
-                    c = System.currentTimeMillis();
-                    test = false;
-                    launcherPower = .4;
+            case SHOOT: {
+                if (runOnce2) {
+                    currentT = System.currentTimeMillis();
+                    runOnce2 = false;
                     launcherWheel.setPower(launcherPower);
                 }
-                a = System.currentTimeMillis();
-                if((a - c) < 2000)
-                {
+                updatingCurrentT = System.currentTimeMillis();
+                if ((updatingCurrentT - currentT) < 2000) {
                     break;
-                }
-                else
-                {
-                    if(count < 2)
-                    {
+                } else {
+                    if (count < 2) {
                         if (cps > 2000 && cps < 2100) {
                             count++;
                             state = states.SHOOT2;
-                        }
-                        else
-                        {
-                            if(test3)
-                            {
-                                c2 = System.currentTimeMillis();
-                                test3 = false;
+                        } else {
+                            if (runOnce3) {
+                                currentT2 = System.currentTimeMillis();
+                                runOnce3 = false;
                             }
-                            a2 = System.currentTimeMillis();
-                            if((a2 - c2) < 500)
-                            {
+                            updatingCurrentT2 = System.currentTimeMillis();
+                            if ((updatingCurrentT2 - currentT2) < 500) {
                                 break;
-                            }
-                            else
-                            {
+                            } else {
                                 if (cps > 2100) {
                                     launcherPower = launcherPower - .01;
                                 }
@@ -156,16 +140,14 @@ public class DR_Auto_New_Launcher extends OpMode
                                     launcherPower = launcherPower + .01;
                                 }
                                 launcherWheel.setPower(launcherPower);
-                                test3 = true;
+                                runOnce3 = true;
                             }
 
                             break;
                         }
 
-                        test = true;
-                    }
-                    else
-                    {
+                        runOnce1 = true;
+                    } else {
                         launcherWheel.setPower(0);
                         collector.setPower(0.0);
                         state = states.DRIVE2;
@@ -176,76 +158,75 @@ public class DR_Auto_New_Launcher extends OpMode
             }
 
             case SHOOT2:
-                if(test1)
-                {
-                    c = System.currentTimeMillis();
-                    test1 = false;
+                if (runOnce4) {
+                    currentT = System.currentTimeMillis();
+                    runOnce4 = false;
                 }
-                    if (test4)
-                    {
-                        collector.setPower(collectorPower);
-                        a = System.currentTimeMillis();
-                        if((a - c) < 500)
-                        {
-                            break;
-                        }
-                        collector.setPower(0);
-                        resetEncoder(collector);
-                        test4 = false;
-                        a = System.currentTimeMillis();
-                        if((a - c) < 1000)
-                        {
-                            break;
-                        }
-                    }
-
-                if (test4 == false)
-                {
+                if (runOnce5) {
                     collector.setPower(collectorPower);
-                    a = System.currentTimeMillis();
-                    if((a - c) < 2000)
-                    {
+                    updatingCurrentT = System.currentTimeMillis();
+                    if ((updatingCurrentT - currentT) < 500) {
+                        break;
+                    }
+                    collector.setPower(0);
+                    resetEncoder(collector);
+                    runOnce5 = false;
+                    if (runOnce6) {
+                        currentT = System.currentTimeMillis();
+                        runOnce6 = false;
+                    }
+                    updatingCurrentT = System.currentTimeMillis();
+                    if ((updatingCurrentT - currentT) < 1000) {
+                        break;
+
+                    }
+                }
+
+                if (runOnce5 == false) {
+                    collector.setPower(collectorPower);
+                    updatingCurrentT = System.currentTimeMillis();
+                    if (runOnce7) {
+                        currentT = System.currentTimeMillis();
+                        runOnce7 = false;
+                    }
+                    if ((updatingCurrentT - currentT) < 2000) {
                         break;
                     }
                     collector.setPower(0);
                     resetEncoder(collector);
                 }
-
-                a = System.currentTimeMillis();
-                if((a - c) < 3000)
-                {
-                    break;
+                if (runOnce8) {
+                    currentT = System.currentTimeMillis();
+                    runOnce8 = false;
                 }
-                else
-                {
-                    a = System.currentTimeMillis();
-                    if((a - c) < 1000)
-                    {
-                        break;
-                    }
+
+                updatingCurrentT = System.currentTimeMillis();
+                if ((updatingCurrentT - currentT) < 2000) {
+                    break;
+                } else {
                     state = states.SHOOT;
-                    test = true;
-                    test1 = true;
+                    runOnce2 = true;
+                    runOnce4 = true;
                 }
                 break;
 
             case DRIVE2:
-                sleep(1500);
-                if (motorLB.getCurrentPosition() > 1000)
-                {
-                    // Previous value was -1500
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    state = states.STOP;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                if (runOnce9) {
+                    currentT = System.currentTimeMillis();
+                    runOnce9 = false;
                 }
-                else
-                {
+
+                updatingCurrentT = System.currentTimeMillis();
+                if ((updatingCurrentT - currentT) < 1500) {
+                    break;
+                }
+                if (motorLB.getCurrentPosition() > 1000) {
+                    // Previous value was -1500
+                    stopMotors(motorLB, motorLF, motorRB, motorRF);
+                    state = states.STOP;
+                    resetEncoder(motorLB);
+                    resetEncoder(motorRB);
+                } else {
                     telemetry.addData("Position LF", motorLF.getCurrentPosition());
                     telemetry.addData("Position LB", motorLB.getCurrentPosition());
                     telemetry.addData("Position RF", motorRF.getCurrentPosition());
@@ -261,21 +242,30 @@ public class DR_Auto_New_Launcher extends OpMode
                 break;
 
 
-
             case STOP:
-                motorRF.setPower(0.0);
-                motorRB.setPower(0.0);
-                motorLF.setPower(0.0);
-                motorLB.setPower(0.0);
-                collector.setPower(0.0);
-                break;
-        }
 
-        telemetry.addData("currentState", state);
-        telemetry.addData("collectorCurrentPos", collector.getCurrentPosition());
+                stopMotors(motorLB, motorLF, motorRB, motorRF);
+                collector.setPower(0);
+                break;
+
+        }
+            telemetry.addData("currentState", state);
+            telemetry.addData("collectorCurrentPos", collector.getCurrentPosition());
 
 
     }
+
+
+
+
+    public static void stopMotors(DcMotor motor1, DcMotor motor2, DcMotor motor3, DcMotor motor4)
+    {
+        motor1.setPower(0);
+        motor2.setPower(0);
+        motor3.setPower(0);
+        motor4.setPower(0);
+    }
+
     public static void resetEncoder(DcMotor TheMotor)
     {
 
@@ -293,3 +283,4 @@ public class DR_Auto_New_Launcher extends OpMode
         }
     }
 }
+

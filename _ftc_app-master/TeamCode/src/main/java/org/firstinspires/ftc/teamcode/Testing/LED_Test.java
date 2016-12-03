@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 
 /**
@@ -10,18 +11,47 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 @TeleOp (name="LED_Test", group = "")
 public class LED_Test extends OpMode
 {
-    DcMotorController LEDController1;
-    DcMotorController LEDController2;
+
+    DcMotor power;
+    DcMotor red;
+    DcMotor green;
+    DcMotor blue;
+
+    DcMotor select;
+
+   // enum states {RED, GREEN, BLUE}
+   // states select;
 
     public void init()
     {
-        LEDController1 = hardwareMap.dcMotorController.get("LEDController1");
-        LEDController2 = hardwareMap.dcMotorController.get("LEDController2");
+
+        power = hardwareMap.dcMotor.get("LEDPower");
+        red = hardwareMap.dcMotor.get("redLED");
+        green = hardwareMap.dcMotor.get("greenLED");
+        blue = hardwareMap.dcMotor.get("blueLED");
+
+        select = red;
 
     }
 
     public void loop()
     {
+
+        if (gamepad1.dpad_up)
+        {
+
+
+
+        }
+
+
+
+
+
+
+
+
+
         if (gamepad1.dpad_up)
         {
             LEDController1.setMotorPower(1, 1.0);
