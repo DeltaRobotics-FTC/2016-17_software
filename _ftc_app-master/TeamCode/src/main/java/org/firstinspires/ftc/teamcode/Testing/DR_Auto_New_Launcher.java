@@ -15,7 +15,7 @@ public class DR_Auto_New_Launcher extends OpMode
     DcMotor motorLB;
     DcMotor motorRF;
     DcMotor motorRB;
-    DcMotor collector;
+    DcMotor motorLift;
     DcMotor launcherWheel;
 
     int lastE = 0;
@@ -48,7 +48,7 @@ public class DR_Auto_New_Launcher extends OpMode
 
 
     double launcherPower = 0.4;
-    double collectorPower = -0.4;
+    double liftPower = -0.4;
 
     enum states {STOP, DRIVE, DRIVE2, SHOOT2, SHOOT}
     states state;
@@ -59,11 +59,11 @@ public class DR_Auto_New_Launcher extends OpMode
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorRB = hardwareMap.dcMotor.get("motorRB");
         motorRF = hardwareMap.dcMotor.get("motorRF");
-        collector = hardwareMap.dcMotor.get("collector");
+        motorLift = hardwareMap.dcMotor.get("motorLift");
         launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
         resetEncoder(motorLB);
         resetEncoder(motorRB);
-        resetEncoder(collector);
+        resetEncoder(motorLift);
 
     }
     public void loop() {
@@ -93,7 +93,7 @@ public class DR_Auto_New_Launcher extends OpMode
                     state = states.SHOOT;
                     resetEncoder(motorLB);
                     resetEncoder(motorRB);
-                    resetEncoder(collector);
+                    resetEncoder(motorLift);
                 } else {
                     telemetry.addData("Position LF", motorLF.getCurrentPosition());
                     telemetry.addData("Position LB", motorLB.getCurrentPosition());
@@ -149,7 +149,7 @@ public class DR_Auto_New_Launcher extends OpMode
                         runOnce1 = true;
                     } else {
                         launcherWheel.setPower(0);
-                        collector.setPower(0.0);
+                        motorLift.setPower(0.0);
                         state = states.DRIVE2;
                         break;
                     }
@@ -162,14 +162,14 @@ public class DR_Auto_New_Launcher extends OpMode
                     currentT = System.currentTimeMillis();
                     runOnce4 = false;
                 }
-                if (runOnce5) {
-                    collector.setPower(collectorPower);
+                motorLift.setPower(liftPower);
+
                     updatingCurrentT = System.currentTimeMillis();
                     if ((updatingCurrentT - currentT) < 500) {
                         break;
                     }
-                    collector.setPower(0);
-                    resetEncoder(collector);
+                    motorLift.setPower(0);
+                    resetEncoder(motorLift);
                     runOnce5 = false;
                     if (runOnce6) {
                         currentT = System.currentTimeMillis();
@@ -180,10 +180,10 @@ public class DR_Auto_New_Launcher extends OpMode
                         break;
 
                     }
-                }
+
 
                 if (runOnce5 == false) {
-                    collector.setPower(collectorPower);
+                    motorLift.setPower(liftPower);
                     updatingCurrentT = System.currentTimeMillis();
                     if (runOnce7) {
                         currentT = System.currentTimeMillis();
@@ -192,8 +192,8 @@ public class DR_Auto_New_Launcher extends OpMode
                     if ((updatingCurrentT - currentT) < 2000) {
                         break;
                     }
-                    collector.setPower(0);
-                    resetEncoder(collector);
+                    motorLift.setPower(0);
+                    resetEncoder(motorLift);
                 }
                 if (runOnce8) {
                     currentT = System.currentTimeMillis();
@@ -245,15 +245,21 @@ public class DR_Auto_New_Launcher extends OpMode
             case STOP:
 
                 stopMotors(motorLB, motorLF, motorRB, motorRF);
-                collector.setPower(0);
+                motorLift.setPower(0);
                 break;
 
-        }
-            telemetry.addData("currentState", state);
-            telemetry.addData("collectorCurrentPos", collector.getCurrentPosition());
+}
 
 
-    }
+    telemetry.addData("currentState", state);
+    telemetry.addData("collectorCurrentPos", motorLift.getCurrentPosition());
+}
+
+
+
+
+
+
 
 
 
