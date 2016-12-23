@@ -11,10 +11,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Autonomous (name = "DR_Auto_10_Blue", group = "")
 public class DR_Auto_10_Blue extends OpMode
 {
-    DcMotor motorLF;
-    DcMotor motorLB;
-    DcMotor motorRF;
-    DcMotor motorRB;
+    DcMotor motorL;
+    DcMotor motorLaunch;
+    DcMotor motorR;
 
     DcMotor launcherWheel;
     Servo popper;
@@ -27,8 +26,8 @@ public class DR_Auto_10_Blue extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.14 ;
-    double popperDown = 0.0;
+    double popperUp = 0.95;
+    double popperDown = 0.6;
 
     int x = 0;
     int count = 0;
@@ -44,12 +43,10 @@ public class DR_Auto_10_Blue extends OpMode
     states state;
 
     public void init() {
-        state = states.SHOOT;
-        motorLB = hardwareMap.dcMotor.get("motorLB");
-        motorLF = hardwareMap.dcMotor.get("motorLF");
-        motorRB = hardwareMap.dcMotor.get("motorRB");
-        motorRF = hardwareMap.dcMotor.get("motorRF");
-
+        state = states.DRIVE1;
+        motorL = hardwareMap.dcMotor.get("motorL");
+        motorR = hardwareMap.dcMotor.get("motorR");
+        motorLaunch = hardwareMap.dcMotor.get("motorLaunch");
         launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
         popper = hardwareMap.servo.get("popper");
         popper.setPosition(popperDown);
@@ -65,19 +62,42 @@ public class DR_Auto_10_Blue extends OpMode
         {
             rev++;
             constant = System.currentTimeMillis();
-            encoderCount = motorLF.getCurrentPosition() - lastE;
-            lastE = motorLF.getCurrentPosition();
+            encoderCount = motorLaunch.getCurrentPosition() - lastE;
+            lastE = motorLaunch.getCurrentPosition();
             cps = encoderCount * 10;
 
         }
         telemetry.addData("Rev", rev);
-        telemetry.addData("Encoder Position", motorLF.getCurrentPosition());
+        telemetry.addData("Encoder Position", motorLaunch.getCurrentPosition());
         telemetry.addData("CPS", cps);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
 
 
         switch (state)
         {
+            case DRIVE1:
+                if (motorL.getCurrentPosition() > 800)
+                {
+                    // Previous value was -1500
+                    motorR.setPower(0.0);
+                    motorL.setPower(0.0);
+                    state = states.SHOOT;
+                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
+                else
+                {
+                    telemetry.addData("Position L", motorL.getCurrentPosition());
+                    telemetry.addData("Position R", motorR.getCurrentPosition());
+                    motorL.setDirection(DcMotorSimple.Direction.FORWARD);
+                    motorR.setDirection(DcMotorSimple.Direction.REVERSE);
+                    motorR.setPower(0.4);
+                    motorL.setPower(0.4);
+                    break;
+                }
+                break;
             case SHOOT:
             {
                 if(test)
@@ -108,7 +128,7 @@ public class DR_Auto_10_Blue extends OpMode
                                 test3 = false;
                             }
                             a2 = System.currentTimeMillis();
-                            if((a2 - c2) < 500)
+                            if((a2 - c2) < 1000)
                             {
                                 break;
                             }
@@ -154,100 +174,39 @@ public class DR_Auto_10_Blue extends OpMode
                 else
                 {
                     popper.setPosition(popperDown);
+                    launcherWheel.setPower(0.00);
                     state = states.SHOOT;
                     test = true;
                     test1 = true;
                 }
                     break;
 
-
-            case DRIVE1:
-                if (motorLB.getCurrentPosition() < -300)
-                {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    state = states.TURN;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                else
-                {
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                    motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorRF.setPower(0.6);
-                    motorRB.setPower(-0.6);
-                    motorLF.setPower(-0.6);
-                    motorLB.setPower(-0.6);
-                    break;
-                }
-                break;
-
-            case TURN:
-                if(motorRB.getCurrentPosition() < 0)
-                {
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                }
-                else{
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
-                    state = states.DRIVE2;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                break;
             case DRIVE2:
-                if (motorLB.getCurrentPosition() > 2000)
+                if (motorL.getCurrentPosition() > 1300)
                 {
                     // Previous value was -1500
-                    motorRF.setPower(0.0);
-                    motorRB.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorLB.setPower(0.0);
+                    motorR.setPower(0.0);
+                    motorL.setPower(0.0);
                     state = states.STOP;
-                    motorLB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 }
                 else
                 {
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                    motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorRF.setPower(-0.4);
-                    motorRB.setPower(0.4);
-                    motorLF.setPower(0.4);
-                    motorLB.setPower(0.4);
+                    telemetry.addData("Position L", motorL.getCurrentPosition());
+                    telemetry.addData("Position R", motorR.getCurrentPosition());
+                    motorL.setDirection(DcMotorSimple.Direction.FORWARD);
+                    motorR.setDirection(DcMotorSimple.Direction.REVERSE);
+                    motorR.setPower(0.4);
+                    motorL.setPower(0.4);
                     break;
                 }
                 break;
             case STOP:
-                motorRF.setPower(0.0);
-                motorRB.setPower(0.0);
-                motorLF.setPower(0.0);
-                motorLB.setPower(0.0);
+                motorR.setPower(0.0);
+                motorL.setPower(0.0);
                 break;
         }
 

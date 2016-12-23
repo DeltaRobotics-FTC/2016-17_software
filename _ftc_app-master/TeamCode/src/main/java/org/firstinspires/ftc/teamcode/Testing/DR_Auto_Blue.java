@@ -97,7 +97,7 @@ public class DR_Auto_Blue extends Camera_Testing {
         switch (state) {
 
             case TURN:
-                if(motorL.getCurrentPosition() < 1175)
+                if(motorR.getCurrentPosition() < 425)
                 {
                     motorR.setPower(0.25);
                     motorL.setPower(0.0);
@@ -118,7 +118,7 @@ public class DR_Auto_Blue extends Camera_Testing {
             case DRIVE_FORWARD2:
                 colorSensorL.enableLed(true);
                 colorSensorR.enableLed(true);
-                if ((L < WhiteMaxValL && L > WhiteMinValL) || (R < WhiteMaxValR && R > WhiteMinValR) || motorR.getCurrentPosition() > 3500)
+                if ((L < WhiteMaxValL && L > WhiteMinValL) || (R < WhiteMaxValR && R > WhiteMinValR))
                 {
 
                     motorR.setPower(0.0);
@@ -179,8 +179,8 @@ public class DR_Auto_Blue extends Camera_Testing {
                 }
                 else
                 {
-                    motorR.setPower(0.25);
-                    motorL.setPower(0.25);
+                    motorR.setPower(0.15);
+                    motorL.setPower(-.05);
                     telemetry.addData("Right (L)", L);
                     telemetry.addData("Alpha", colorSensorR.alpha());
                 }
@@ -200,8 +200,8 @@ public class DR_Auto_Blue extends Camera_Testing {
                 }
                 else
                 {
-                    motorR.setPower(0.25);
-                    motorL.setPower(0.20);
+                    motorR.setPower(0.15);
+                    motorL.setPower(-0.05);
                 }
                 break;
 

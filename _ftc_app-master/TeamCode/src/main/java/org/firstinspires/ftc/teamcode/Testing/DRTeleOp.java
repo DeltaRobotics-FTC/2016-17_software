@@ -17,7 +17,8 @@ public class DRTeleOp extends OpMode
         DcMotor motorL;
         DcMotor launcherWheel;
         DcMotor motorLift;
-        //Servo popper;
+        DcMotor collector;
+        Servo popper;
         Servo bBP;
         float throttleLeft = 0;
         float throttleRight = 0;
@@ -26,8 +27,9 @@ public class DRTeleOp extends OpMode
         double bBPvalue = 0.079;
         boolean bBpStop = false;
         boolean drive = true;
-        double popperUp = 0.17;
-        double popperDown = 0.0;
+        double popperUp = 0.95;
+        double popperDown = 0.6;
+        double popperPosition = 0.6;
         boolean bumper = false;
 
         long constant = 0;
@@ -35,10 +37,13 @@ public class DRTeleOp extends OpMode
         long time = 0;
         int launcherE = 0;
         double rpm = 0;
-        boolean collectorVar = false;
+        boolean liftVar = false;
         double launcherPower = 0.36;
+        double collectorPower = 0.5;
         boolean dPadLeftState = false;
         boolean dPadRightState = false;
+        boolean startState = false;
+        boolean backState = false;
 
 
         boolean test = true;
@@ -55,12 +60,13 @@ public class DRTeleOp extends OpMode
             motorL = hardwareMap.dcMotor.get("motorL");
             motorR = hardwareMap.dcMotor.get("motorR");
             bBP = hardwareMap.servo.get("bBP");
-            motorLift = hardwareMap.dcMotor.get("motorLift");
+            //motorLift = hardwareMap.dcMotor.get("motorLift");
             launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
-            /*
+            //collector = hardwareMap.dcMotor.get("collector");
+
                 popper = hardwareMap.servo.get("popper");
                 popper.setPosition(popperDown);
-            */
+
             bBP.setPosition(bBPvalue);
             // Adds the components you previously initialized to the config
         }
@@ -82,23 +88,23 @@ public class DRTeleOp extends OpMode
                 if (gamepad2.left_bumper) {
                     bumper = false;
                 }
-            if (gamepad2.dpad_up)
+            /*if (gamepad2.dpad_up)
             {
-                collectorVar = true;
+                liftVar = true;
             }
             if (gamepad2.dpad_down)
             {
-                collectorVar = false;
+                liftVar = false;
             }
-            if (collectorVar)
+            if (liftVar)
             {
                 motorLift.setPower(-0.4);
             }
-            if (!collectorVar)
+            if (!liftVar)
             {
 
                 motorLift.setPower(0);
-            }
+            }*/
 
             if (gamepad2.dpad_left && dPadLeftState == false)
             {
@@ -133,27 +139,50 @@ public class DRTeleOp extends OpMode
                 }
 
 
-               /*
-                    if (gamepad2.right_trigger > 0.2) {
-                    popper.setPosition(popperUp);
-                    }
-                    if (gamepad2.right_trigger < 0.2) {
-                    popper.setPosition(popperDown);
-                    }
+                if (gamepad2.right_trigger > 0.8)
+                {
+                    popperPosition = popperUp;
+                }
+
+                if (gamepad2.left_trigger > 0.8)
+                {
+                    popperPosition = popperDown;
+                }
+
+                popper.setPosition(popperPosition);
+            telemetry.addData("Popper Position Set", popperPosition);
+
+            /*if (gamepad2.right_trigger > 0.75)
+            {
+                collector.setPower(collectorPower);
+            }
+            if (gamepad2.left_trigger > 0.75)
+            {
+                collector.setPower(0.0);
+            }*/
+
+            /*if (gamepad2.back && backState == false)
+            {
+                backState = true;
+                collectorPower -= 0.05;
+            }
+            else if (!gamepad2.back)
+            {
+                backState = false;
+            }
+
+            /*if (gamepad2.start && startState == false)
+            {
+                startState = true;
+                collectorPower += 0.05;
+            }
+            else if (!gamepad2.start)
+            {
+                startState = false;
+            }*/
 
 
-                    if (gamepad2.dpad_down) {
-                        popperUp -= .05;
-                    }
-                    if (gamepad2.dpad_up) {
-                        popperUp += .05;
-                    }
-
-                    Code inside the loop method is run over and over again when you press the start
-                    button. When the OpMode ends, this loop stops
-                */
-
-                throttleLeft = Range.clip(throttleLeft, -1, 1);
+            throttleLeft = Range.clip(throttleLeft, -1, 1);
                 throttleRight = Range.clip(throttleRight, -1, 1);
                 bBPvalue = Range.clip(bBPvalue, .01, .99);
                 // Makes it so the variables can't go below -1 or above 1
@@ -229,13 +258,13 @@ public class DRTeleOp extends OpMode
 
                 bBP.setPosition(bBPvalue);
 
-
                 telemetry.addData("bBP", bBPvalue);
                 telemetry.addData("Drive", drive);
-                //telemetry.addData("Popper Pos", popper.getPosition());
+                //telemetry.addData("collector Power", collectorPower);
+                telemetry.addData("Popper Pos", popper.getPosition());
                 telemetry.addData("Constant", constant);
-                telemetry.addData("launcherrPower", launcherPower);
-                telemetry.addData("collectorStatus", collectorVar);
+                telemetry.addData("launcherPower", launcherPower);
+                //telemetry.addData("liftStatus", liftVar);
                 // Sets the appropriate motors to the appropriate variables
 
             if(System.currentTimeMillis() - constant > 1000) {

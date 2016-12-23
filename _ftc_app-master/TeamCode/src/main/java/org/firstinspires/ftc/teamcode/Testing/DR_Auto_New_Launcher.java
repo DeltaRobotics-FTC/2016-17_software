@@ -11,12 +11,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Autonomous (name = "DR_Auto_New_Launcher", group = "")
 public class DR_Auto_New_Launcher extends OpMode
 {
-    DcMotor motorLF;
-    DcMotor motorLB;
-    DcMotor motorRF;
-    DcMotor motorRB;
-    DcMotor motorLift;
+    DcMotor motorL;
+    DcMotor motorR;
+    //DcMotor motorLift;
     DcMotor launcherWheel;
+    Servo popper;
 
     int lastE = 0;
     int encoderCount;
@@ -29,10 +28,8 @@ public class DR_Auto_New_Launcher extends OpMode
     // current time in millis read
     long updatingCurrentT = 0;
     // Current time in millis read that continues to read
-    /*
-        double popperUp = 0.14 ;
-        double popperDown = 0.0;
-    */
+        double popperUp = 0.95 ;
+        double popperDown = 0.6;
 
     int count = 0;
     int rev = 0;
@@ -55,15 +52,14 @@ public class DR_Auto_New_Launcher extends OpMode
 
     public void init() {
         state = states.DRIVE;
-        motorLB = hardwareMap.dcMotor.get("motorLB");
-        motorLF = hardwareMap.dcMotor.get("motorLF");
-        motorRB = hardwareMap.dcMotor.get("motorRB");
-        motorRF = hardwareMap.dcMotor.get("motorRF");
-        motorLift = hardwareMap.dcMotor.get("motorLift");
+        motorL = hardwareMap.dcMotor.get("motorL");
+        motorR = hardwareMap.dcMotor.get("motorR");
+        popper = hardwareMap.servo.get("popper");
+        //motorLift = hardwareMap.dcMotor.get("motorLift");
         launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
-        resetEncoder(motorLB);
-        resetEncoder(motorRB);
-        resetEncoder(motorLift);
+        resetEncoder(motorL);
+        resetEncoder(motorR);
+        popper.setPosition(popperDown);
 
     }
     public void loop() {
@@ -74,37 +70,33 @@ public class DR_Auto_New_Launcher extends OpMode
         if (System.currentTimeMillis() - currentT > 100) {
             rev++;
             currentT = System.currentTimeMillis();
-            encoderCount = motorLF.getCurrentPosition() - lastE;
-            lastE = motorLF.getCurrentPosition();
+            encoderCount = motorL.getCurrentPosition() - lastE;
+            lastE = motorL.getCurrentPosition();
             cps = encoderCount * 10;
 
         }
         telemetry.addData("Rev", rev);
-        telemetry.addData("Encoder Position", motorLF.getCurrentPosition());
+        telemetry.addData("Encoder Position", motorL.getCurrentPosition());
         telemetry.addData("CPS", cps);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
 
 
         switch (state) {
             case DRIVE:
-                if (motorLB.getCurrentPosition() > 1000) {
+                if (motorL.getCurrentPosition() > 1000) {
                     // Previous value was -1500
-                    stopMotors(motorLB, motorLF, motorRB, motorRF);
+                    stopMotors(motorL, motorR);
                     state = states.SHOOT;
-                    resetEncoder(motorLB);
-                    resetEncoder(motorRB);
-                    resetEncoder(motorLift);
+                    resetEncoder(motorL);
+                    resetEncoder(motorR);
+                    //resetEncoder(motorLift);
                 } else {
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                    motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorRF.setPower(-0.4);
-                    motorRB.setPower(0.4);
-                    motorLF.setPower(0.4);
-                    motorLB.setPower(0.4);
+                    telemetry.addData("Position L", motorL.getCurrentPosition());
+                    telemetry.addData("Position R", motorR.getCurrentPosition());
+                    motorL.setDirection(DcMotorSimple.Direction.FORWARD);
+                    motorR.setDirection(DcMotorSimple.Direction.REVERSE);
+                    motorR.setPower(-0.4);
+                    motorL.setPower(0.4);
                     break;
                 }
                 break;
@@ -149,7 +141,7 @@ public class DR_Auto_New_Launcher extends OpMode
                         runOnce1 = true;
                     } else {
                         launcherWheel.setPower(0);
-                        motorLift.setPower(0.0);
+                        //motorLift.setPower(0.0);
                         state = states.DRIVE2;
                         break;
                     }
@@ -162,14 +154,16 @@ public class DR_Auto_New_Launcher extends OpMode
                     currentT = System.currentTimeMillis();
                     runOnce4 = false;
                 }
-                motorLift.setPower(liftPower);
+                //motorLift.setPower(liftPower);
+                popper.setPosition(popperUp);
 
                     updatingCurrentT = System.currentTimeMillis();
                     if ((updatingCurrentT - currentT) < 500) {
                         break;
                     }
-                    motorLift.setPower(0);
-                    resetEncoder(motorLift);
+                    popper.setPosition(popperDown);
+                    //motorLift.setPower(0);
+                    //resetEncoder(motorLift);
                     runOnce5 = false;
                     if (runOnce6) {
                         currentT = System.currentTimeMillis();
@@ -183,7 +177,8 @@ public class DR_Auto_New_Launcher extends OpMode
 
 
                 if (runOnce5 == false) {
-                    motorLift.setPower(liftPower);
+                    //motorLift.setPower(liftPower);
+                    popper.setPosition(popperUp);
                     updatingCurrentT = System.currentTimeMillis();
                     if (runOnce7) {
                         currentT = System.currentTimeMillis();
@@ -192,8 +187,9 @@ public class DR_Auto_New_Launcher extends OpMode
                     if ((updatingCurrentT - currentT) < 2000) {
                         break;
                     }
-                    motorLift.setPower(0);
-                    resetEncoder(motorLift);
+                    popper.setPosition(popperDown);
+                    //motorLift.setPower(0);
+                    //resetEncoder(motorLift);
                 }
                 if (runOnce8) {
                     currentT = System.currentTimeMillis();
@@ -220,23 +216,19 @@ public class DR_Auto_New_Launcher extends OpMode
                 if ((updatingCurrentT - currentT) < 1500) {
                     break;
                 }
-                if (motorLB.getCurrentPosition() > 1000) {
+                if (motorL.getCurrentPosition() > 1000) {
                     // Previous value was -1500
-                    stopMotors(motorLB, motorLF, motorRB, motorRF);
+                    stopMotors(motorL, motorR);
                     state = states.STOP;
-                    resetEncoder(motorLB);
-                    resetEncoder(motorRB);
+                    resetEncoder(motorL);
+                    resetEncoder(motorR);
                 } else {
-                    telemetry.addData("Position LF", motorLF.getCurrentPosition());
-                    telemetry.addData("Position LB", motorLB.getCurrentPosition());
-                    telemetry.addData("Position RF", motorRF.getCurrentPosition());
-                    telemetry.addData("Position RB", motorRB.getCurrentPosition());
-                    motorLB.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRB.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorRF.setPower(-0.4);
-                    motorRB.setPower(0.4);
-                    motorLF.setPower(0.4);
-                    motorLB.setPower(0.4);
+                    telemetry.addData("Position LF", motorL.getCurrentPosition());
+                    telemetry.addData("Position RB", motorR.getCurrentPosition());
+                    motorL.setDirection(DcMotorSimple.Direction.FORWARD);
+                    motorR.setDirection(DcMotorSimple.Direction.REVERSE);
+                    motorR.setPower(-0.4);
+                    motorL.setPower(0.4);
                     break;
                 }
                 break;
@@ -244,32 +236,22 @@ public class DR_Auto_New_Launcher extends OpMode
 
             case STOP:
 
-                stopMotors(motorLB, motorLF, motorRB, motorRF);
-                motorLift.setPower(0);
+                stopMotors(motorL, motorR);
+                popper.setPosition(popperUp);
+                //motorLift.setPower(0);
                 break;
 
 }
-
-
     telemetry.addData("currentState", state);
-    telemetry.addData("collectorCurrentPos", motorLift.getCurrentPosition());
+    //telemetry.addData("collectorCurrentPos", motorLift.getCurrentPosition());
+    telemetry.addData("popper", popper.getPosition());
 }
 
 
-
-
-
-
-
-
-
-
-    public static void stopMotors(DcMotor motor1, DcMotor motor2, DcMotor motor3, DcMotor motor4)
+    public static void stopMotors(DcMotor motor1, DcMotor motor2)
     {
         motor1.setPower(0);
         motor2.setPower(0);
-        motor3.setPower(0);
-        motor4.setPower(0);
     }
 
     public static void resetEncoder(DcMotor TheMotor)
