@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Testing;
 
+import android.graphics.Bitmap;
+
 import for_camera_opmodes.OpModeCamera;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -21,14 +23,29 @@ public class Auto_Color_Blue extends OpModeCamera{
     ColorSensor colorSensorR;
     OpticalDistanceSensor ODS;
 
+
+    boolean ERROR = false;
+
+
     float lColor;
     float rColor;
+    int downsampling = 2;
 
     boolean DriveToWhiteLine = false;
     boolean DrivePastWhiteLine = false;
     boolean TurnOntoWhiteLine = false;
+    boolean LineFollowingLeft = false;
+    boolean LineFollowingRight = false;
+    boolean OffRight = false;
+    boolean OffLeft = false;
+    String ReadBeacon;
+    boolean DriveToBeaconButton = false;
 
-    enum States {DriveToWhiteLine, DrivePastWhiteLine, TurnOntoWhiteLine, LineFollowing}
+    double leftPosition = 0.5;
+    double rightPosition = 0.5;
+    boolean onLeft = false;
+
+    enum States {DriveToWhiteLine, DrivePastWhiteLine, TurnOntoWhiteLine, CenterRobot, LineFollowing, ReadBeacon, PushBeaconButton, DriveToBeaconButton, Stop}
     States state;
 
     public void init()
@@ -50,7 +67,7 @@ public class Auto_Color_Blue extends OpModeCamera{
         motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        bBP.setPosition(0.0);
+        bBP.setPosition(0.0079);
 
         setCameraDownsampling(2);
         super.init();
@@ -113,11 +130,120 @@ public class Auto_Color_Blue extends OpModeCamera{
                 }
                 else
                 {
-                    state = States.LineFollowing;
+                    bBP.setPosition(0.765);
+                    state = States.CenterRobot;
                     resetEncoder(motorL);
                     resetEncoder(motorR);
                     break;
                 }
+
+            case CenterRobot:
+                if((colorSensorL.argb() / 1000000) >= 50)
+                {
+                    motorL.setPower(-.10);
+                    motorR.setPower(.10);
+                    break;
+                }
+                else
+                {
+                    state = States.LineFollowing;
+                    break;
+                }
+
+            case LineFollowing:
+                if(ODS.getRawLightDetected() < 0.15)
+                {
+                    if(((colorSensorL.argb() / 1000000) <= 50) && ((colorSensorR.argb() / 1000000) <= 50))
+                    {
+                        //Both are black; drive straight
+                        motorL.setPower(-.05);
+                        motorR.setPower(.05);
+                    }
+                    else if(((colorSensorL.argb() / 1000000) >= 50) && ((colorSensorR.argb() / 1000000) <= 50))
+                    {
+                        //Left is white, right is black; turn to left
+                        OffLeft = offLeft(0.05, 0.15, 0.01, 50, .15);
+                        if(!OffLeft)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            OffLeft = false;
+                        }
+                    }
+                    else if(((colorSensorL.argb() / 1000000) <= 50) && ((colorSensorR.argb() / 1000000) >= 50))
+                    {
+                        //Left is black, right is white; turn to right
+                        OffRight = offRight(0.05, 0.15, 0.01, 50, .15);
+                        if(!OffRight)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            OffRight = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        ERROR = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    resetEncoder(motorL);
+                    resetEncoder(motorR);
+                    state = States.ReadBeacon;
+                    break;
+                }
+
+            case ReadBeacon:
+                bBP.setPosition(0.0079);
+                ReadBeacon = readBeacon();
+                if(ReadBeacon.equals("ERROR") || ReadBeacon.equals("test1") || ReadBeacon.equals("test2"))
+                {
+                    break;
+                }
+                else
+                {
+                    state = States.PushBeaconButton;
+                    break;
+                }
+
+            case PushBeaconButton:
+                if(ReadBeacon.equals("red"))
+                {
+                    bBP.setPosition(rightPosition);
+                }
+                else
+                {
+                    bBP.setPosition(leftPosition);
+                }
+                resetEncoder(motorL);
+                resetEncoder(motorR);
+                state = States.DriveToBeaconButton;
+                break;
+
+            case DriveToBeaconButton:
+                DriveToBeaconButton = goToEncoder(-0.1, 0.1, 50, motorL);
+                if(!DriveToBeaconButton)
+                {
+                    break;
+                }
+                else
+                {
+                    state = States.Stop;
+                    resetEncoder(motorL);
+                    resetEncoder(motorR);
+                    break;
+                }
+    
+            case Stop:
+                motorL.setPower(0.0);
+                motorR.setPower(0.0);
         }
 
 
@@ -126,7 +252,9 @@ public class Auto_Color_Blue extends OpModeCamera{
         telemetry.addData("Right Motor Encoder", motorR.getCurrentPosition());
         telemetry.addData("Left Color Sensor", lColor);
         telemetry.addData("Right Color Sensor", rColor);
+        telemetry.addData("ODS Raw Light Detected", ODS.getRawLightDetected());
         telemetry.addData("Current State", state);
+        telemetry.addData("ERROR", ERROR);
     }
 
     public static void sleep(int time) // In milliseconds
@@ -177,5 +305,169 @@ public class Auto_Color_Blue extends OpModeCamera{
             endCondition = true;
         }
         return endCondition;
+    }
+    public boolean offRight(double maxPower, double medPower, double minPower, float targetColor, double distance)
+    {
+        boolean endCondition;
+        motorL.setPower(-minPower);
+        motorR.setPower(maxPower);
+        if((colorSensorR.argb() / 1000000) >= targetColor)
+        {
+            endCondition = false;
+        }
+        else
+        {
+            endCondition = true;
+        }
+        return endCondition;
+    }
+    public boolean offLeft(double maxPower, double medPower, double minPower, float targetColor, double distance)
+    {
+        boolean endCondition;
+        motorL.setPower(-maxPower);
+        motorR.setPower(minPower);
+        if((colorSensorL.argb() / 1000000) >= targetColor)
+        {
+            endCondition = false;
+        }
+        else
+        {
+            endCondition = true;
+        }
+        return endCondition;
+    }
+    public boolean lineFollowing(double maxPower, double medPower, double minPower, float targetColor, double distance)
+    {
+        boolean endCondition;
+        if(ODS.getRawLightDetected() < distance)
+        {
+            endCondition = false;
+            /*if(((colorSensorL.argb() / 1000000) <= targetColor) && ((colorSensorR.argb() / 1000000) <= targetColor))
+            {
+                //Both are black
+                motorL.setPower(-medPower);
+                motorR.setPower(medPower);
+            }
+            else if(((colorSensorL.argb() / 1000000) >= targetColor) && ((colorSensorR.argb() / 1000000) <= targetColor))
+            {
+                //Left = white; Right = black
+                motorL.setPower(-maxPower);
+                motorR.setPower(minPower);
+            }
+            else if(((colorSensorL.argb() / 1000000) <= targetColor) && ((colorSensorR.argb() / 1000000) >= targetColor))
+            {
+                //Left = black; Right = white
+                motorL.setPower(-minPower);
+                motorR.setPower(maxPower);
+            }
+            else
+            {
+                state = States.Stop;
+                motorL.setPower(0.0);
+                motorR.setPower(0.0);
+            }*/
+            if((colorSensorL.argb() / 1000000) >= targetColor)
+            {
+                onLeft = true;
+                goToColor(-.15, 0.0, 50, 2000, motorL, colorSensorR);
+            }
+
+        }
+        else
+        {
+            motorL.setPower(0.0);
+            motorR.setPower(0.0);
+            endCondition = true;
+        }
+        return endCondition;
+    }
+    public String readBeacon()
+    {
+        String leftColor = "test1";
+        String rightColor = "test2";
+        if (imageReady()) {
+            int redValueLeft = -76800;
+            int blueValueLeft = -76800;
+            int greenValueLeft = -76800;
+            int redValueRight = -76800;
+            int blueValueRight = -76800;
+            int greenValueRight = -76800;
+
+            Bitmap rgbImage;
+
+            rgbImage = convertYuvImageToRgb(yuvImage, width, height, downsampling);
+            for (int x = 0; x < 240; x++)
+            {
+                for (int y = 0; y < 320; y++)
+                {
+                    rgbImage.setPixel(x, y, greatestColor(rgbImage.getPixel(x, y)));
+                }
+            }
+            SaveImage(rgbImage);
+
+
+            //Evaluating left side of screen/beacon
+            for (int x = 0; x < 120; x++)
+            {
+                for (int y = 90; y < 230; y++)
+                {
+                    int pixelL = rgbImage.getPixel(x, y);
+                    redValueLeft += red(pixelL);
+                    blueValueLeft += blue(pixelL);
+                    greenValueLeft += green(pixelL);
+                }
+            }
+
+            for (int a = 121; a < 240; a++)
+            {
+                for (int b = 90; b < 230; b++)
+                {
+                    int pixelR = rgbImage.getPixel(a, b);
+                    redValueRight += red(pixelR);
+                    blueValueRight += blue(pixelR);
+                    greenValueRight += green(pixelR);
+                }
+            }
+
+            redValueLeft = normalizePixels(redValueLeft);
+            blueValueLeft = normalizePixels(blueValueLeft);
+            greenValueLeft = normalizePixels(greenValueLeft);
+            redValueRight = normalizePixels(redValueRight);
+            blueValueRight = normalizePixels(blueValueRight);
+            greenValueRight = normalizePixels(greenValueRight);
+
+            int colorLeft = highestColor(redValueLeft, greenValueLeft, blueValueLeft);
+            int colorRight = highestColor(redValueRight, greenValueRight, blueValueRight);
+
+            switch (colorLeft)
+            {
+                case 0:
+                    leftColor = "red";
+                    break;
+                case 2:
+                    leftColor = "blue";
+                    break;
+            }
+
+            switch (colorRight)
+            {
+                case 0:
+                    rightColor = "red";
+                    break;
+                case 2:
+                    rightColor = "blue";
+                    break;
+            }
+
+
+        }
+        if(rightColor.equals(leftColor))
+        {
+            return "ERROR";
+        }
+        else
+        {
+            return leftColor;
+        }
     }
 }
