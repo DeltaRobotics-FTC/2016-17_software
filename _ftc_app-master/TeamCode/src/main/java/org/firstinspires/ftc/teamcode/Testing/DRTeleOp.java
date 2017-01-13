@@ -20,33 +20,40 @@ public class DRTeleOp extends OpMode
         DcMotor collector;
         Servo popper;
         Servo bBP;
+
         float throttleLeft = 0;
         float throttleRight = 0;
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
         double bBPvalue = 0.079;
+        double popperUp = 0.99;
+        double popperDown = 0.8;
+        double popperPosition = 0.8;
+
         boolean bBpStop = false;
         boolean drive = true;
-        double popperUp = 0.95;
-        double popperDown = 0.6;
-        double popperPosition = 0.6;
-        boolean bumper = false;
-
-        long constant = 0;
-        long current = 0;
-        long time = 0;
-        int launcherE = 0;
-        double rpm = 0;
-        boolean liftVar = false;
-        double launcherPower = 0.36;
-        double collectorPower = 0.5;
+        boolean spinning = false;
+        boolean collecting = false;
+        double constant = 0;
+        boolean collectback = false;
+        int lastE = 0;
+        int encoderCount;
+        int cps = 0;
+        int rev = 0;
+        long timeConstant;
+        long timeChange;
+        double launcherPower = -0.36;
         boolean dPadLeftState = false;
         boolean dPadRightState = false;
-        boolean startState = false;
-        boolean backState = false;
-
-
         boolean test = true;
+        boolean spinStart = false;
+        boolean popperTime;
+        boolean autoAdjust = false;
+        long popperStart;
+
+        int a = 0;
+        int p = 10;
+
 
 
         // Declares 2 float variables for the throttle
@@ -60,12 +67,11 @@ public class DRTeleOp extends OpMode
             motorL = hardwareMap.dcMotor.get("motorL");
             motorR = hardwareMap.dcMotor.get("motorR");
             bBP = hardwareMap.servo.get("bBP");
-            //motorLift = hardwareMap.dcMotor.get("motorLift");
+            motorLift = hardwareMap.dcMotor.get("motorLift");
             launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
-            //collector = hardwareMap.dcMotor.get("collector");
-
-                popper = hardwareMap.servo.get("popper");
-                popper.setPosition(popperDown);
+            collector = hardwareMap.dcMotor.get("collector");
+            popper = hardwareMap.servo.get("popper");
+            popper.setPosition(popperDown);
 
             bBP.setPosition(bBPvalue);
             // Adds the components you previously initialized to the config
@@ -74,92 +80,191 @@ public class DRTeleOp extends OpMode
         @Override
         public void loop() {
 
-                if (gamepad1.dpad_down) {
-                    drive = false;
-                }
-                if (gamepad1.dpad_up) {
-                    drive = true;
-                }
-
-                if (gamepad2.right_bumper) {
-                    bumper = true;
-                }
-
-                if (gamepad2.left_bumper) {
-                    bumper = false;
-                }
-            /*if (gamepad2.dpad_up)
+            if(spinStart)
             {
-                liftVar = true;
+                a = launcherWheel.getCurrentPosition();
+                spinStart = false;
+                timeConstant = System.currentTimeMillis();
             }
-            if (gamepad2.dpad_down)
+            telemetry.addData("cps", cps);
+            telemetry.addData("a", a);
+            telemetry.addData("AutoAdjust", autoAdjust);
+            if(System.currentTimeMillis() - timeConstant > 50)
             {
-                liftVar = false;
+                if (spinning) {
+                    timeConstant = System.currentTimeMillis();
+                    encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
+                    lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
+                    //****For Not Averaging****//
+                    cps = encoderCount * 20;
+                    //****For Averaging****//
+                    a = ((a * (p - 1) + cps) / p);
+                    if (a < -1800 && autoAdjust)
+                    {
+                        if (a > -2000) {
+                            launcherPower -= .002;
+                        }
+                        if (a < -2075) {
+                            launcherPower += .002;
+                        }
+                    }
+                }
             }
-            if (liftVar)
+
+            if(gamepad1.dpad_right)
             {
-                motorLift.setPower(-0.4);
+                collectback = true;
             }
-            if (!liftVar)
+
+            if(gamepad1.dpad_left)
             {
+                collectback = false;
+            }
 
-                motorLift.setPower(0);
-            }*/
+            if (gamepad1.dpad_down)
+            {
+                drive = false;
+            }
 
-            if (gamepad2.dpad_left && dPadLeftState == false)
+            if (gamepad1.dpad_up)
+            {
+                drive = true;
+            }
+
+            if (gamepad2.right_bumper)
+            {
+                spinning = true;
+            }
+
+            if (gamepad2.left_bumper)
+            {
+                spinning = false;
+            }
+
+            if (gamepad1.right_trigger > 0.75)
+            {
+              collecting = true;
+            }
+
+            if (gamepad1.left_trigger > 0.75)
+            {
+                collecting = false;
+            }
+
+
+            //Adjusting the Launcher Power - incrementing by 5%
+            if (gamepad2.dpad_left && !dPadLeftState)
             {
                 dPadLeftState = true;
-                launcherPower -= 0.05;
+                launcherPower -= 0.005;
             }
             else if (!gamepad2.dpad_left)
             {
                 dPadLeftState = false;
             }
 
-            if (gamepad2.dpad_right && dPadRightState == false)
+            if (gamepad2.dpad_right && !dPadRightState)
             {
                 dPadRightState = true;
-                launcherPower += 0.05;
+                launcherPower += 0.005;
             }
             else if (!gamepad2.dpad_right)
             {
                 dPadRightState = false;
             }
 
-                if (bumper) {
-                    if (test) {
-                        constant = System.currentTimeMillis();
-                        test = false;
-                    }
-                    launcherWheel.setPower(launcherPower);
-                }
 
-                if (!bumper) {
-                    launcherWheel.setPower(0.0);
-                }
+            //Beacon Button Presser - incrementing by .005
+            if (gamepad2.b && !bBpStop)
+            {
+                bBPvalue += .005;
+            }
+            if (gamepad2.x && !bBpStop)
+            {
+                bBPvalue -= .005;
+            }
+            if (gamepad2.a)
+            {
+                bBpStop = true;
+                bBPvalue = 0.0079;
+                bBP.setPosition(bBPvalue);
+                sleep(500);
+            }
+            if (!gamepad2.a)
+            {
+                bBpStop = false;
+            }
+            if (gamepad2.y)
+            {
+                bBpStop = true;
+                bBPvalue = 0.765;
+                bBP.setPosition(bBPvalue);
+                sleep(500);
+            }
+            if (!gamepad2.a) {
+                bBpStop = false;
+            }
 
+            //Setting the Launcher Power
+            if (spinning)
+            {
+                launcherWheel.setPower(launcherPower);
+            }
 
-                if (gamepad2.right_trigger > 0.8)
-                {
-                    popperPosition = popperUp;
-                }
+            if (!spinning)
+            {
+                launcherWheel.setPower(0);
+            }
 
-                if (gamepad2.left_trigger > 0.8)
+            //Setting the Popper Position
+            if (gamepad2.right_trigger > 0.8 && a < -2000 && a > -2075)
+            {
+                popperTime = true;
+                popperPosition = popperUp;
+                popperStart = System.currentTimeMillis();
+            }
+            if (gamepad2.left_trigger > 0.8 )
+            {
+                popperPosition = popperDown;
+            }
+
+            if(popperTime)
+            {
+                if(System.currentTimeMillis() - popperStart > 200)
                 {
                     popperPosition = popperDown;
+                    popperTime = false;
                 }
-
-                popper.setPosition(popperPosition);
-            telemetry.addData("Popper Position Set", popperPosition);
-
-            /*if (gamepad2.right_trigger > 0.75)
-            {
-                collector.setPower(collectorPower);
             }
-            if (gamepad2.left_trigger > 0.75)
+
+
+            if(gamepad2.dpad_up)
+            {
+                autoAdjust = true;
+            }
+
+            if(gamepad2.dpad_down)
+            {
+                autoAdjust = false;
+            }
+            popper.setPosition(popperPosition);
+
+
+            //Setting the Collector and the Lift Motor
+            if(collecting)
+            {
+                collector.setPower(-0.8);
+                motorLift.setPower(1.0);
+            }
+            else if(collectback)
+            {
+                collector.setPower(.8);
+            }
+            else
             {
                 collector.setPower(0.0);
-            }*/
+                motorLift.setPower(0.0);
+            }
 
             /*if (gamepad2.back && backState == false)
             {
@@ -183,59 +288,38 @@ public class DRTeleOp extends OpMode
 
 
             throttleLeft = Range.clip(throttleLeft, -1, 1);
-                throttleRight = Range.clip(throttleRight, -1, 1);
-                bBPvalue = Range.clip(bBPvalue, .01, .99);
-                // Makes it so the variables can't go below -1 or above 1
-                // Sends telemetry (a message) to the driver's station that displays the
-                // left and right stick Y values and the 2 variables throttleLeft and throttleRight
+            throttleRight = Range.clip(throttleRight, -1, 1);
+            bBPvalue = Range.clip(bBPvalue, .01, .99);
+            // Makes it so the variables can't go below -1 or above 1
 
-                //throttleLeft = gamepad1.right_stick_y;
-                //throttleRight = gamepad1.left_stick_y;
-
-                if (gamepad1.right_stick_y > 0) {
-                    throttleRight = gamepad1.right_stick_y * gamepad1.right_stick_y;
-                } else if (gamepad1.right_stick_y < 0) {
-                    throttleRight = gamepad1.right_stick_y * gamepad1.right_stick_y * -1;
-                } else {
-                    throttleRight = 0;
-                }
-                // Scales the  variable throttleRight exponentially
-                if (gamepad1.left_stick_y > 0) {
-                    throttleLeft = gamepad1.left_stick_y * gamepad1.left_stick_y;
-                } else if (gamepad1.left_stick_y < 0) {
-                    throttleLeft = gamepad1.left_stick_y * gamepad1.left_stick_y * -1;
-                } else {
-                    throttleLeft = 0;
-                }
-
-                if (gamepad2.b && bBpStop == false) {
-                    bBPvalue += .005;
-                }
-                if (gamepad2.x && bBpStop == false) {
-                    bBPvalue -= .005;
-                }
-                if (gamepad2.a) {
-                    bBpStop = true;
-                    bBPvalue = 0.0079;
-                    bBP.setPosition(bBPvalue);
-                    sleep(500);
-                }
-                if (!gamepad2.a) {
-                    bBpStop = false;
-                }
-            if (gamepad2.y) {
-                bBpStop = true;
-                bBPvalue = 0.765;
-                bBP.setPosition(bBPvalue);
-                sleep(500);
+            //Scales the motors exponentially
+            if (gamepad1.right_stick_y > 0)
+            {
+                throttleRight = gamepad1.right_stick_y;// * gamepad1.right_stick_y;
             }
-            if (!gamepad2.a) {
-                bBpStop = false;
+            else if (gamepad1.right_stick_y < 0)
+            {
+                throttleRight = gamepad1.right_stick_y;// * gamepad1.right_stick_y * -1;
+            }
+            else
+            {
+                throttleRight = 0;
             }
 
+            if (gamepad1.left_stick_y > 0)
+            {
+                throttleLeft = gamepad1.left_stick_y;// * gamepad1.left_stick_y;
+            }
+            else if (gamepad1.left_stick_y < 0)
+            {
+                throttleLeft = gamepad1.left_stick_y;// * gamepad1.left_stick_y * -1;
+            }
+            else
+            {
+                throttleLeft = 0;
+            }
 
                 // Scales the  variable throttleLeft exponentially
-
 
                 if (gamepad1.b) {
                     throttleScalingLeft = 0.5;
@@ -256,31 +340,17 @@ public class DRTeleOp extends OpMode
                     motorR.setPower(-throttleLeft);
                     }
 
-                bBP.setPosition(bBPvalue);
+            bBP.setPosition(bBPvalue);
 
-                telemetry.addData("bBP", bBPvalue);
-                telemetry.addData("Drive", drive);
-                //telemetry.addData("collector Power", collectorPower);
-                telemetry.addData("Popper Pos", popper.getPosition());
-                telemetry.addData("Constant", constant);
-                telemetry.addData("launcherPower", launcherPower);
-                //telemetry.addData("liftStatus", liftVar);
+            //telemetry.addData("bBP Position", bBPvalue);
+            //telemetry.addData("Popper Position", popperPosition);
+            //telemetry.addData("Collector Power", collector.getPower());
+            telemetry.addData("Launcher Wheel (the motor)", launcherWheel.getPower());
+            telemetry.addData("Launcher Power (the variable)", launcherPower);
+            //telemetry.addData("Lift Power", motorLift.getPower());
+
                 // Sets the appropriate motors to the appropriate variables
 
-            if(System.currentTimeMillis() - constant > 1000) {
-                current = System.currentTimeMillis();
-                time = current - constant;
-                launcherE = motorL.getCurrentPosition();
-                telemetry.addData("Launcher Encoder", motorL.getCurrentPosition());
-                telemetry.addData("Right Front", motorR);
-                time /= 1000;
-                //time is in seconds
-                launcherE /= 140;
-                telemetry.addData("Launcher Rotations", launcherE);
-                //launcherE is in rotations
-                rpm = 60 * launcherE / time;
-                telemetry.addData("RPM", rpm);
-            }
         }
 
         public static void sleep(int amt) // In milliseconds

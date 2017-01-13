@@ -38,7 +38,7 @@ public class Auto_Color_Blue extends OpModeCamera{
     boolean LineFollowingRight = false;
     boolean OffRight = false;
     boolean OffLeft = false;
-    String ReadBeacon;
+    String ReadBeacon = "ERROR";
     boolean DriveToBeaconButton = false;
 
     double leftPosition = 0.5;
@@ -152,53 +152,53 @@ public class Auto_Color_Blue extends OpModeCamera{
 
             case LineFollowing:
                 if(ODS.getRawLightDetected() < 0.15)
+            {
+                if(((colorSensorL.argb() / 1000000) <= 50) && ((colorSensorR.argb() / 1000000) <= 50))
                 {
-                    if(((colorSensorL.argb() / 1000000) <= 50) && ((colorSensorR.argb() / 1000000) <= 50))
+                    //Both are black; drive straight
+                    motorL.setPower(-.05);
+                    motorR.setPower(.05);
+                }
+                else if(((colorSensorL.argb() / 1000000) >= 50) && ((colorSensorR.argb() / 1000000) <= 50))
+                {
+                    //Left is white, right is black; turn to left
+                    OffLeft = offLeft(0.05, 0.15, 0.01, 50, .15);
+                    if(!OffLeft)
                     {
-                        //Both are black; drive straight
-                        motorL.setPower(-.05);
-                        motorR.setPower(.05);
-                    }
-                    else if(((colorSensorL.argb() / 1000000) >= 50) && ((colorSensorR.argb() / 1000000) <= 50))
-                    {
-                        //Left is white, right is black; turn to left
-                        OffLeft = offLeft(0.05, 0.15, 0.01, 50, .15);
-                        if(!OffLeft)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            OffLeft = false;
-                        }
-                    }
-                    else if(((colorSensorL.argb() / 1000000) <= 50) && ((colorSensorR.argb() / 1000000) >= 50))
-                    {
-                        //Left is black, right is white; turn to right
-                        OffRight = offRight(0.05, 0.15, 0.01, 50, .15);
-                        if(!OffRight)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            OffRight = false;
-                            break;
-                        }
+                        break;
                     }
                     else
                     {
-                        ERROR = true;
+                        OffLeft = false;
+                    }
+                }
+                else if(((colorSensorL.argb() / 1000000) <= 50) && ((colorSensorR.argb() / 1000000) >= 50))
+                {
+                    //Left is black, right is white; turn to right
+                    OffRight = offRight(0.05, 0.15, 0.01, 50, .15);
+                    if(!OffRight)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        OffRight = false;
                         break;
                     }
                 }
                 else
                 {
-                    resetEncoder(motorL);
-                    resetEncoder(motorR);
-                    state = States.ReadBeacon;
+                    ERROR = true;
                     break;
                 }
+            }
+            else
+            {
+                resetEncoder(motorL);
+                resetEncoder(motorR);
+                state = States.ReadBeacon;
+                break;
+            }
 
             case ReadBeacon:
                 bBP.setPosition(0.0079);
@@ -209,6 +209,7 @@ public class Auto_Color_Blue extends OpModeCamera{
                 }
                 else
                 {
+                    bBP.setPosition(0.765);
                     state = States.PushBeaconButton;
                     break;
                 }
@@ -240,14 +241,14 @@ public class Auto_Color_Blue extends OpModeCamera{
                     resetEncoder(motorR);
                     break;
                 }
-    
+
+
             case Stop:
                 motorL.setPower(0.0);
                 motorR.setPower(0.0);
         }
 
-
-
+        //Telemetry Goes Here!!!
         telemetry.addData("Left Motor Encoder", motorL.getCurrentPosition());
         telemetry.addData("Right Motor Encoder", motorR.getCurrentPosition());
         telemetry.addData("Left Color Sensor", lColor);
@@ -255,9 +256,10 @@ public class Auto_Color_Blue extends OpModeCamera{
         telemetry.addData("ODS Raw Light Detected", ODS.getRawLightDetected());
         telemetry.addData("Current State", state);
         telemetry.addData("ERROR", ERROR);
+        telemetry.addData("Color", ReadBeacon);
     }
 
-    public static void sleep(int time) // In milliseconds
+    private static void sleep(int time) // In milliseconds
     {
         double constant = System.currentTimeMillis();
         double current = System.currentTimeMillis();
@@ -265,7 +267,7 @@ public class Auto_Color_Blue extends OpModeCamera{
             current = System.currentTimeMillis();
         }
     }
-    public boolean goToEncoder(double leftPower, double rightPower, int encPosition, DcMotor encMotor)
+    private boolean goToEncoder(double leftPower, double rightPower, int encPosition, DcMotor encMotor)
     {
         boolean endCondition;
         motorL.setPower(leftPower);
@@ -283,12 +285,13 @@ public class Auto_Color_Blue extends OpModeCamera{
         }
         return endCondition;
     }
-    public void resetEncoder(DcMotor motor)
+
+    private void resetEncoder(DcMotor motor)
     {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-    public boolean goToColor(double leftPower, double rightPower, float targetColor, int encTimeout, DcMotor encMotor, ColorSensor colorSensor)
+    private boolean goToColor(double leftPower, double rightPower, float targetColor, int encTimeout, DcMotor encMotor, ColorSensor colorSensor)
     {
         boolean endCondition;
         motorL.setPower(leftPower);
@@ -306,7 +309,7 @@ public class Auto_Color_Blue extends OpModeCamera{
         }
         return endCondition;
     }
-    public boolean offRight(double maxPower, double medPower, double minPower, float targetColor, double distance)
+    private boolean offRight(double maxPower, double medPower, double minPower, float targetColor, double distance)
     {
         boolean endCondition;
         motorL.setPower(-minPower);
@@ -321,7 +324,7 @@ public class Auto_Color_Blue extends OpModeCamera{
         }
         return endCondition;
     }
-    public boolean offLeft(double maxPower, double medPower, double minPower, float targetColor, double distance)
+    private boolean offLeft(double maxPower, double medPower, double minPower, float targetColor, double distance)
     {
         boolean endCondition;
         motorL.setPower(-maxPower);
@@ -336,7 +339,7 @@ public class Auto_Color_Blue extends OpModeCamera{
         }
         return endCondition;
     }
-    public boolean lineFollowing(double maxPower, double medPower, double minPower, float targetColor, double distance)
+    private boolean lineFollowing(double maxPower, double medPower, double minPower, float targetColor, double distance)
     {
         boolean endCondition;
         if(ODS.getRawLightDetected() < distance)
@@ -381,7 +384,7 @@ public class Auto_Color_Blue extends OpModeCamera{
         }
         return endCondition;
     }
-    public String readBeacon()
+    private String readBeacon()
     {
         String leftColor = "test1";
         String rightColor = "test2";

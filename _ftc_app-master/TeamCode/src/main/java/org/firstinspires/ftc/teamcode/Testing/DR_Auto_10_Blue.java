@@ -17,6 +17,7 @@ public class DR_Auto_10_Blue extends OpMode
 
     DcMotor launcherWheel;
     Servo popper;
+    DcMotor collector;
 
     double constant = 0;
     int lastE = 0;
@@ -26,8 +27,8 @@ public class DR_Auto_10_Blue extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.95;
-    double popperDown = 0.6;
+    double popperUp = 0.99;
+    double popperDown = 0.8;
 
     int x = 0;
     int count = 0;
@@ -46,9 +47,9 @@ public class DR_Auto_10_Blue extends OpMode
         state = states.DRIVE1;
         motorL = hardwareMap.dcMotor.get("motorL");
         motorR = hardwareMap.dcMotor.get("motorR");
-        motorLaunch = hardwareMap.dcMotor.get("motorLaunch");
         launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
         popper = hardwareMap.servo.get("popper");
+        collector = hardwareMap.dcMotor.get("collector");
         popper.setPosition(popperDown);
 
     }
@@ -58,20 +59,21 @@ public class DR_Auto_10_Blue extends OpMode
             constant = System.currentTimeMillis();
             testloop = false;
         }
+
         if(System.currentTimeMillis() - constant > 100)
         {
-            rev++;
-            constant = System.currentTimeMillis();
-            encoderCount = motorLaunch.getCurrentPosition() - lastE;
-            lastE = motorLaunch.getCurrentPosition();
-            cps = encoderCount * 10;
+            rev++; //Making sure that the loop keeps running
+            constant = System.currentTimeMillis(); //Resetting current time for calculating time difference
+            encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
+            lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
+            cps = encoderCount * 10; //Converting from milliseconds to seconds
 
         }
         telemetry.addData("Rev", rev);
-        telemetry.addData("Encoder Position", motorLaunch.getCurrentPosition());
+        telemetry.addData("Encoder Position", launcherWheel.getCurrentPosition());
         telemetry.addData("CPS", cps);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
-
+        collector.setPower(.8);
 
         switch (state)
         {
@@ -104,7 +106,7 @@ public class DR_Auto_10_Blue extends OpMode
                 {
                     c = System.currentTimeMillis();
                     test = false;
-                    launcherPower = .4;
+                    launcherPower = -.4;
                     launcherWheel.setPower(launcherPower);
                 }
                 a = System.currentTimeMillis();
@@ -116,7 +118,7 @@ public class DR_Auto_10_Blue extends OpMode
                 {
                     if(count < 2)
                     {
-                        if (cps > 1800 && cps < 1900) {
+                        if (cps < -2000 && cps > -2100) {
                             count++;
                             state = states.SHOOT2;
                         }
@@ -134,11 +136,11 @@ public class DR_Auto_10_Blue extends OpMode
                             }
                             else
                             {
-                                if (cps > 1900) {
-                                    launcherPower = launcherPower - .01;
-                                }
-                                if (cps < 1800) {
+                                if (cps < -2100) {
                                     launcherPower = launcherPower + .01;
+                                }
+                                if (cps > -2000) {
+                                    launcherPower = launcherPower - .01;
                                 }
                                 launcherWheel.setPower(launcherPower);
                                 test3 = true;
@@ -182,7 +184,7 @@ public class DR_Auto_10_Blue extends OpMode
                     break;
 
             case DRIVE2:
-                if (motorL.getCurrentPosition() > 1300)
+                if (motorL.getCurrentPosition() > 1275)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
