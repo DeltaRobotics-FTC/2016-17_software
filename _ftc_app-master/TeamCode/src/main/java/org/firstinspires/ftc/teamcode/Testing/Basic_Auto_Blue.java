@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 11/1/2016.
  */
-@Autonomous (name = "DR_Auto_10_Blue", group = "")
-public class DR_Auto_10_Blue extends OpMode
+@Autonomous (name = "Basic_Auto_Blue", group = "")
+public class Basic_Auto_Blue extends OpMode
 {
     DcMotor motorL;
     DcMotor motorLaunch;
@@ -184,7 +184,7 @@ public class DR_Auto_10_Blue extends OpMode
                     break;
 
             case DRIVE2:
-                if (motorL.getCurrentPosition() > 1275)
+                if (motorL.getCurrentPosition() > 1375)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
@@ -201,7 +201,7 @@ public class DR_Auto_10_Blue extends OpMode
                     telemetry.addData("Position R", motorR.getCurrentPosition());
                     motorL.setDirection(DcMotorSimple.Direction.FORWARD);
                     motorR.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorR.setPower(0.4);
+                    motorR.setPower(0.45);
                     motorL.setPower(0.4);
                     break;
                 }
@@ -209,6 +209,7 @@ public class DR_Auto_10_Blue extends OpMode
             case STOP:
                 motorR.setPower(0.0);
                 motorL.setPower(0.0);
+                collector.setPower(0.0);
                 break;
         }
 

@@ -16,7 +16,7 @@ public class Camera_Testing extends OpModeCamera{
     private int looped = 0;
     private int ds1 = 1;
     private boolean flag = true;
-    int white = 50;
+    int white = 150;
 
     public void init() {
         setCameraDownsampling(2);
@@ -38,11 +38,58 @@ public class Camera_Testing extends OpModeCamera{
             Bitmap rgbImage;
             rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds1);
 
+            double returns[] = findLineAngle(rgbImage, 480, 640);
+
+            for (int x = 0; x < 480; x++) {
+                for (int y = 0; y < 640; y++) {
+                    /*if(x == returns[1])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(0,255,255));
+                    }
+                    if(x == returns[2])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(0,255,0));
+                    }
+                    if(x == returns[3])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(255,0,255));
+                    }
+                    if(x == returns[4])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(255,255,0));
+                    }*/
+                    if(y == returns[11])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(255,0,0));
+                    }
+                    if(y == returns[12])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(0,0,255));
+                    }
+                    if(x == returns[5])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(255,0,0));
+                    }
+                    if(x == returns[6])
+                    {
+                        rgbImage.setPixel(x,y, Color.rgb(0,0,255));
+                    }
+                }
+            }
+            SaveImage(rgbImage);
+
+            telemetry.addData("Theta", returns[0]);
+            telemetry.addData("BottomBeginX", returns[1]);
+            telemetry.addData("BottomEndX", returns[2]);
+            telemetry.addData("TopBeginX", returns[3]);
+            telemetry.addData("TopEndX", returns[4]);
+            telemetry.addData("BottomX", returns[5]);
+            telemetry.addData("TopX", returns[6]);
             //Put results to phone with red/blue/green
 
 
             //Evaluating left side of screen/beacon
-            for (int x = 0; x < 240; x++) {
+            for (int x = (int)(returns[6] - 50); x < (int)(returns[6] + 50); x++) {
                 for (int y = 0; y < 640; y++) {
                     int pixelL = rgbImage.getPixel(x, y);
                     redValueLeft += red(pixelL);
@@ -52,8 +99,8 @@ public class Camera_Testing extends OpModeCamera{
             }
 
             //Evaluating right side of screen/beacon
-            for (int a = 121; a < 240; a++) {
-                for (int b = 90; b < 230; b++) {
+            for (int a = 240; a < 480; a++) {
+                for (int b = 0; b < 640; b++) {
                     int pixelR = rgbImage.getPixel(a,b);
                     redValueRight += red(pixelR);
                     blueValueRight += blue(pixelR);
@@ -90,34 +137,9 @@ public class Camera_Testing extends OpModeCamera{
                 case 2:
                     colorStringRight = "BLUE";
             }
-            double returns[] = findLineAngle(rgbImage, 480, 640);
+            telemetry.addData("Left Color", colorStringLeft);
+            telemetry.addData("Right Color", colorStringRight);
 
-            for (int x = 0; x < 480; x++) {
-                for (int y = 0; y < 640; y++) {
-                    if(x == returns[1] && y == returns[11])
-                    {
-                        rgbImage.setPixel(x,y, Color.rgb(255,0,0));
-                    }
-                }
-            }
-            SaveImage(rgbImage);
-
-            /*telemetry.addData("Color Left", colorStringLeft);
-            telemetry.addData("Left Red", redValueLeft);
-            telemetry.addData("Left Blue", blueValueLeft);
-            telemetry.addData("Left Green", greenValueLeft);
-            telemetry.addData("Color Right", colorStringRight);
-            telemetry.addData("Right Red", redValueRight);
-            telemetry.addData("Right Blue", blueValueRight);
-            telemetry.addData("Right Green", greenValueRight);*/
-
-            telemetry.addData("Theta", returns[0]);
-            telemetry.addData("BottomBeginX", returns[1]);
-            telemetry.addData("BottomEndX", returns[2]);
-            telemetry.addData("TopBeginX", returns[3]);
-            telemetry.addData("TopEndX", returns[4]);
-            telemetry.addData("BottomX", returns[5]);
-            telemetry.addData("TopX", returns[6]);
         }
     }
 
@@ -142,12 +164,13 @@ public class Camera_Testing extends OpModeCamera{
 
         boolean[] topPixels;
         topPixels = new boolean[pixelWidth];
+        int pixelPlaceholder;
 
         //Get bottom line center
         for (int x = 0; x < pixelWidth; x++)
         {
-            int pixelPlaceholder = image.getPixel(x,(pixelHeight - 3));
-            if(red(pixelPlaceholder) > white && blue(pixelPlaceholder) > white && green(pixelPlaceholder) > white )
+            pixelPlaceholder = image.getPixel(x,(pixelHeight - 3));
+            if((Color.red(pixelPlaceholder) > white) && (Color.blue(pixelPlaceholder) > white) && (Color.green(pixelPlaceholder) > white))
             {
                 bottomPixels[x] = true;
             }
@@ -177,17 +200,17 @@ public class Camera_Testing extends OpModeCamera{
             }
         }
         //Average the center of the line
-        bottomX = (bottomEndX - bottomBeginX);
+        bottomX = (bottomBeginX + ((bottomEndX - bottomBeginX) / 2));
         bottomY = (pixelHeight - 3);
         //Point of topLine
         int y;
-        for(y = 639; line; y--)
+        for(y = (pixelHeight-3); line; y--)
         {
             //Create and analyze an array for each y-value
             for(int x = 0; x < pixelWidth; x++)
             {
-                int pixelPlaceholder = image.getPixel(x,y);
-                if(red(pixelPlaceholder) > white && blue(pixelPlaceholder) > white && green(pixelPlaceholder) > white )
+                pixelPlaceholder = image.getPixel(x,y);
+                if((Color.red(pixelPlaceholder) > white) && (Color.blue(pixelPlaceholder) > white) && (Color.green(pixelPlaceholder) > white))
                 {
                     topPixels[x] = true;
                 }
@@ -196,15 +219,28 @@ public class Camera_Testing extends OpModeCamera{
                     topPixels[x] = false;
                 }
             }
+            line = false;
             for(int x = 0; x < pixelWidth; x++)
             {
-                line = false;
                 if(topPixels[x])
                 {
                     line = true;
                 }
             }
         }
+        for(int x = 0; x < pixelWidth; x++)
+        {
+            pixelPlaceholder = image.getPixel(x,(y+5));
+            if((Color.red(pixelPlaceholder) > white) && (Color.blue(pixelPlaceholder) > white) && (Color.green(pixelPlaceholder) > white))
+            {
+                topPixels[x] = true;
+            }
+            else
+            {
+                topPixels[x] = false;
+            }
+        }
+
         for (int x = 0; x < pixelWidth; x++)
         {
             if(!topFlag)
@@ -225,7 +261,7 @@ public class Camera_Testing extends OpModeCamera{
             }
         }
         //Average the center of the line
-        topX = (topEndX - topBeginX);
+        topX = (topBeginX + ((topEndX - topBeginX) / 2));
         topY = y;
 
         //Analyze the image and find the two points

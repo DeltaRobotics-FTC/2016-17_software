@@ -41,14 +41,13 @@ public class DRTeleOp extends OpMode
         int cps = 0;
         int rev = 0;
         long timeConstant;
-        long timeChange;
         double launcherPower = -0.36;
         boolean dPadLeftState = false;
         boolean dPadRightState = false;
         boolean test = true;
         boolean spinStart = false;
         boolean popperTime;
-        boolean autoAdjust = false;
+        boolean autoAdjust = true;
         long popperStart;
 
         int a = 0;
@@ -217,8 +216,9 @@ public class DRTeleOp extends OpMode
             }
 
             //Setting the Popper Position
-            if (gamepad2.right_trigger > 0.8 && a < -2000 && a > -2075)
+            if (gamepad2.right_trigger > 0.8 && a < -2000 && a > -2075 && cps > -2100)
             {
+
                 popperTime = true;
                 popperPosition = popperUp;
                 popperStart = System.currentTimeMillis();
@@ -259,6 +259,7 @@ public class DRTeleOp extends OpMode
             else if(collectback)
             {
                 collector.setPower(.8);
+                motorLift.setPower(-1.0);
             }
             else
             {
