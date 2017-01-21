@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.I2cDevice;
 /**
  * Created by RoboticsUser on 11/19/2016.
  */
-@Autonomous (name = "I2c_Address_Writing_Test", group = "")
+//@Autonomous (name = "I2c_Address_Writing_Test", group = "")
 public class I2c_Address_Writing_Test extends OpMode
 {
 

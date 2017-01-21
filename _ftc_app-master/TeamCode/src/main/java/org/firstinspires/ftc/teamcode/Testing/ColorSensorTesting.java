@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.R;
  * Created by RoboticsUser on 10/18/2016.
  */
 
-@Autonomous (name = "ColorSensorTesting", group = "")
+//@Autonomous (name = "ColorSensorTesting", group = "")
 public class ColorSensorTesting extends OpMode
 {
     ColorSensor colorSensorL;

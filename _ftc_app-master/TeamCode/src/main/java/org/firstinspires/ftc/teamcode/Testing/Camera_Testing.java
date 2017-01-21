@@ -10,13 +10,18 @@ import for_camera_opmodes.OpModeCamera;
 /**
  * Created by RoboticsUser on 12/29/2015.
  */
-@Autonomous(name = "Camera_Testing_Op", group = "SensorTesting")
+//@Autonomous(name = "Camera_Testing_Op", group = "SensorTesting")
 
 public class Camera_Testing extends OpModeCamera{
     private int looped = 0;
     private int ds1 = 1;
     private boolean flag = true;
-    int white = 150;
+    int white = 120;
+    double topX;
+    double leftBoundary = 100;
+    double rightBoundary = 100;
+    double center = 320;
+    String adjustString = "";
 
     public void init() {
         setCameraDownsampling(2);
@@ -78,19 +83,36 @@ public class Camera_Testing extends OpModeCamera{
             }
             SaveImage(rgbImage);
 
+            if((topX - center) < -10)
+            {
+                adjustString = "move left!";
+            }
+            else if((topX - center) > 10)
+            {
+                adjustString = "move right!";
+            }
+            else
+            {
+                adjustString = "go now!";
+            }
             telemetry.addData("Theta", returns[0]);
-            telemetry.addData("BottomBeginX", returns[1]);
-            telemetry.addData("BottomEndX", returns[2]);
-            telemetry.addData("TopBeginX", returns[3]);
-            telemetry.addData("TopEndX", returns[4]);
-            telemetry.addData("BottomX", returns[5]);
-            telemetry.addData("TopX", returns[6]);
-            //Put results to phone with red/blue/green
+            telemetry.addData("", adjustString);
 
+            telemetry.addData("Center", topX - center);
+            //Put results to phone with red/blue/green
+            topX = returns[6];
+            if(topX - 100 < 0)
+            {
+                leftBoundary = topX;
+            }
+            if(topX + 100 > 480)
+            {
+                rightBoundary = (480 - topX);
+            }
 
             //Evaluating left side of screen/beacon
-            for (int x = (int)(returns[6] - 50); x < (int)(returns[6] + 50); x++) {
-                for (int y = 0; y < 640; y++) {
+            for (int x = ((int)(topX - leftBoundary)); x < topX; x++) {
+                for (int y = 160; y < 320; y++) {
                     int pixelL = rgbImage.getPixel(x, y);
                     redValueLeft += red(pixelL);
                     blueValueLeft += blue(pixelL);
@@ -99,8 +121,8 @@ public class Camera_Testing extends OpModeCamera{
             }
 
             //Evaluating right side of screen/beacon
-            for (int a = 240; a < 480; a++) {
-                for (int b = 0; b < 640; b++) {
+            for (int a = (int)topX; a < ((int)(topX + rightBoundary)); a++) {
+                for (int b = 160; b < 320; b++) {
                     int pixelR = rgbImage.getPixel(a,b);
                     redValueRight += red(pixelR);
                     blueValueRight += blue(pixelR);
@@ -145,13 +167,13 @@ public class Camera_Testing extends OpModeCamera{
 
     private double[] findLineAngle(Bitmap image, int pixelWidth, int pixelHeight)
     {
-        int topX = 1;
-        int topY = 1;
+        double topX;
+        double topY;
         int topBeginX = 0;
         int topEndX = 0;
         boolean line = true;
-        int bottomX = 2;
-        int bottomY = 2;
+        double bottomX;
+        double bottomY;
         int bottomBeginX = 0;
         int bottomEndX = 0;
         double theta;
@@ -228,6 +250,11 @@ public class Camera_Testing extends OpModeCamera{
                 }
             }
         }
+        if(y > 635)
+        {
+            y = 630;
+        }
+
         for(int x = 0; x < pixelWidth; x++)
         {
             pixelPlaceholder = image.getPixel(x,(y+5));
@@ -266,8 +293,8 @@ public class Camera_Testing extends OpModeCamera{
 
         //Analyze the image and find the two points
 
-        int opposite = bottomX-topX;
-        int adjacent = bottomY-topY;
+        double opposite = center-topX;
+        double adjacent = topY-bottomY;
         theta = Math.atan(opposite/adjacent);
         theta = Math.toDegrees(theta);
         returnArray[0] = theta;
@@ -278,11 +305,6 @@ public class Camera_Testing extends OpModeCamera{
         returnArray[4] = topEndX;
         returnArray[5] = bottomX;
         returnArray[6] = topX;
-
-        //returnArray[7] = bottomBeginY;
-        //returnArray[8] = bottomEndY;
-        //returnArray[9] = topBeginY;
-        //returnArray[10] = topEndY;
         returnArray[11] = bottomY;
         returnArray[12] = topY;
         return returnArray;

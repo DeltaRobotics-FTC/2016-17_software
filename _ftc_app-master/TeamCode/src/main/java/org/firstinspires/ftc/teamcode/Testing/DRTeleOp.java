@@ -14,7 +14,9 @@ public class DRTeleOp extends OpMode
 
     {
         DcMotor motorR;
+        DcMotor motorRF;
         DcMotor motorL;
+        DcMotor motorLF;
         DcMotor launcherWheel;
         DcMotor motorLift;
         DcMotor collector;
@@ -65,6 +67,8 @@ public class DRTeleOp extends OpMode
             //"Init" button on the driver's station
             motorL = hardwareMap.dcMotor.get("motorL");
             motorR = hardwareMap.dcMotor.get("motorR");
+            motorRF = hardwareMap.dcMotor.get("motorRF");
+            motorLF = hardwareMap.dcMotor.get("motorLF");
             bBP = hardwareMap.servo.get("bBP");
             motorLift = hardwareMap.dcMotor.get("motorLift");
             launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
@@ -335,10 +339,14 @@ public class DRTeleOp extends OpMode
 
                 if (drive) {
                     motorL.setPower(-throttleLeft);
+                    motorLF.setPower(-throttleLeft);
                     motorR.setPower(throttleRight);
+                    motorRF.setPower(throttleRight);
                 } else {
                     motorL.setPower(throttleRight);
+                    motorLF.setPower(throttleRight);
                     motorR.setPower(-throttleLeft);
+                    motorRF.setPower(-throttleLeft);
                     }
 
             bBP.setPosition(bBPvalue);
@@ -348,6 +356,7 @@ public class DRTeleOp extends OpMode
             //telemetry.addData("Collector Power", collector.getPower());
             telemetry.addData("Launcher Wheel (the motor)", launcherWheel.getPower());
             telemetry.addData("Launcher Power (the variable)", launcherPower);
+            telemetry.addData("Drive", drive);
             //telemetry.addData("Lift Power", motorLift.getPower());
 
                 // Sets the appropriate motors to the appropriate variables

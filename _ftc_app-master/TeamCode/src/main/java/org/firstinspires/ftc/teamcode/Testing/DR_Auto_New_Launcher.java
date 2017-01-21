@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 11/1/2016.
  */
-@Autonomous (name = "DR_Auto_New_Launcher", group = "")
+//@Autonomous (name = "DR_Auto_New_Launcher", group = "")
 public class DR_Auto_New_Launcher extends OpMode
 {
     DcMotor motorL;

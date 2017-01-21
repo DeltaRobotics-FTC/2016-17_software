@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.Range;
 /**
  * Created by RoboticsUser on 11/28/2016.
  */
-@TeleOp (name="LED_Test", group = "")
+//@TeleOp (name="LED_Test", group = "")
 public class LED_Test extends OpMode
 {
 

@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
  * Created by RoboticsUser on 10/13/2016.
  */
 
-@Autonomous (name = "Auto_Blue", group = "")
+//@Autonomous (name = "Auto_Blue", group = "")
 public class DR_Auto_Blue extends Camera_Testing {
 
 
@@ -28,6 +28,9 @@ public class DR_Auto_Blue extends Camera_Testing {
     ColorSensor colorSensorL;
     ColorSensor colorSensorR;
     OpticalDistanceSensor ODS;
+    DcMotor launcherWheel;
+    Servo popper;
+    DcMotor collector;
 
     enum States {TURN, DRIVE_FORWARD1, TURN_TO_LINE1, TURN_TO_LINE2, LINE_FOLOWING, CAMERA, PRESS_BUTTON, DRIVE_FORWARD2, STOP, DRIVE_FORWARD3}
 
@@ -41,6 +44,8 @@ public class DR_Auto_Blue extends Camera_Testing {
     final int WhiteMaxValL = 2000;
     final int WhiteMinValL = 50;
 
+    double popperUp = 0.99;
+    double popperDown = 0.8;
 
     int ds2 = 2;
     int bBPP;
