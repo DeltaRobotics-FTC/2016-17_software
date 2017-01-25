@@ -280,6 +280,7 @@ public class Auto_Color_Blue extends OpModeCamera{
                     }
                     break;
 
+                
                 case Stop:
                     motorL.setPower(0.0);
                     motorLF.setPower(0.0);
