@@ -300,7 +300,7 @@ public class DRTeleOp extends OpMode
             //Scales the motors exponentially
             if (gamepad1.right_stick_y > 0)
             {
-                throttleRight = gamepad1.right_stick_y;// * gamepad1.right_stick_y;
+                throttleRight = gamepad1.right_stick_y  *  gamepad1.right_stick_y;
             }
             else if (gamepad1.right_stick_y < 0)
             {
