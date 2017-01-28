@@ -55,10 +55,7 @@ public class DRTeleOp extends OpMode
         int a = 0;
         int p = 10;
 
-
-
         // Declares 2 float variables for the throttle
-
 
         @Override
         public void init()
@@ -258,12 +255,12 @@ public class DRTeleOp extends OpMode
             if(collecting)
             {
                 collector.setPower(-0.8);
-                motorLift.setPower(1.0);
+                motorLift.setPower(-1.0);
             }
             else if(collectback)
             {
                 collector.setPower(.8);
-                motorLift.setPower(-1.0);
+                motorLift.setPower(1.0);
             }
             else
             {

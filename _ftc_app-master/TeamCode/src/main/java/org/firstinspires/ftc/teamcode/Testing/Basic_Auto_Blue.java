@@ -82,7 +82,8 @@ public class Basic_Auto_Blue extends OpMode
         switch (state)
         {
             case DRIVE1:
-                if (motorL.getCurrentPosition() > 700)
+                //Changed from 700 for testing
+                if (motorL.getCurrentPosition() > 3000)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
@@ -107,10 +108,10 @@ public class Basic_Auto_Blue extends OpMode
                     motorR.setDirection(DcMotorSimple.Direction.REVERSE);
                     motorLF.setDirection(DcMotorSimple.Direction.FORWARD);
                     motorRF.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorR.setPower(0.4);
-                    motorL.setPower(0.4);
-                    motorRF.setPower(0.4);
-                    motorLF.setPower(0.4);
+                    motorR.setPower(0.2);
+                    motorL.setPower(0.2);
+                    motorRF.setPower(0.2);
+                    motorLF.setPower(0.2);
                     break;
                 }
                 break;

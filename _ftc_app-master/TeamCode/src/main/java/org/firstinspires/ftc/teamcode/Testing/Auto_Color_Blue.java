@@ -6,6 +6,7 @@ import android.graphics.Color;
 import for_camera_opmodes.OpModeCamera;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
@@ -15,8 +16,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 12/22/2016.
  */
-//@Autonomous(name = "Auto_Color_Blue", group = "")
-public class Auto_Color_Blue extends OpModeCamera{
+@Autonomous(name = "Full_Auto_Blue", group = "")
+public class Auto_Color_Blue extends OpMode {
     DcMotor motorL;
     DcMotor motorLF;
     DcMotor motorR;
@@ -65,8 +66,8 @@ public class Auto_Color_Blue extends OpModeCamera{
 
     public void init()
     {
-        setCameraDownsampling(2);
-        super.init();
+        //setCameraDownsampling(2);
+        //super.init();
 
         motorL = hardwareMap.dcMotor.get("motorL");
         motorLF = hardwareMap.dcMotor.get("motorLF");
@@ -115,7 +116,7 @@ public class Auto_Color_Blue extends OpModeCamera{
     public void loop()
     {
 
-        if (imageReady()) {
+        //if (imageReady()) {
             Bitmap rgbImage;
             lColor = colorSensorL.argb() / 1000000;
             rColor = colorSensorR.argb() / 1000000;
@@ -123,7 +124,7 @@ public class Auto_Color_Blue extends OpModeCamera{
             //Place order of code below here!
             switch (state) {
                 case DriveToWhiteLine:
-                    DriveToWhiteLine = goToColor(-0.1, 0.1, 50, 4000, motorL, colorSensorR);
+                    /*DriveToWhiteLine = goToColor(-0.1, 0.1, 50, 4000, motorL, colorSensorR);
                     if (!DriveToWhiteLine) {
                         break;
                     } else {
@@ -133,7 +134,26 @@ public class Auto_Color_Blue extends OpModeCamera{
                         resetEncoder(motorR);
                         resetEncoder(motorRF);
                         break;
+                    }*/
+
+                    if((colorSensorL.argb() / 1000000) < 50)
+                    {
+                        motorLF.setPower(-.1);
+                        motorL.setPower(-.1);
+                        motorRF.setPower(.1);
+                        motorR.setPower(.1);
+                        telemetry.addData("LeftPower", -.1);
+                        telemetry.addData("RightPower", .1);
                     }
+                    else
+                    {
+                        motorL.setPower(0.0);
+                        motorLF.setPower(0.0);
+                        motorR.setPower(0.0);
+                        motorRF.setPower(0.0);
+                        state = States.DrivePastWhiteLine;
+                    }
+                    break;
 
                 case DrivePastWhiteLine:
                     DrivePastWhiteLine = goToEncoder(-0.10, 0.10, 50, motorL);
@@ -163,7 +183,7 @@ public class Auto_Color_Blue extends OpModeCamera{
                     }
 
                 case PositionRobot:
-                    rev++;
+                    /*rev++;
                     rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds1);
                     robotTheta = positionRobot(rgbImage);
                     theta = robotTheta[0];
@@ -232,10 +252,10 @@ public class Auto_Color_Blue extends OpModeCamera{
                         sleep(3000);
                         state = States.ReadBeacon;
                         break;
-                    }
+                    }*/
                 case ReadBeacon:
                     bBP.setPosition(0.0079);
-                    ReadBeacon = readBeacon(robotTheta[1]);
+                    //ReadBeacon = readBeacon(robotTheta[1]);
                     if (ReadBeacon.equals("ERROR") || ReadBeacon.equals("test1") || ReadBeacon.equals("test2"))
                     {
                         telemetry.addData("Stuck Here?", "ReadBeacon");
@@ -280,7 +300,7 @@ public class Auto_Color_Blue extends OpModeCamera{
                     }
                     break;
 
-                
+
                 case Stop:
                     motorL.setPower(0.0);
                     motorLF.setPower(0.0);
@@ -299,7 +319,7 @@ public class Auto_Color_Blue extends OpModeCamera{
             telemetry.addData("ERROR", ERROR);
             telemetry.addData("Read Beacon", ReadBeacon);
             //telemetry.addData("Color", ReadBeacon);
-            }
+            //}
         }
     private static void sleep(int time) // In milliseconds
     {
@@ -503,7 +523,7 @@ public class Auto_Color_Blue extends OpModeCamera{
 
             return returnArray;
     }
-    private String readBeacon(double topX)
+    /*private String readBeacon(double topX)
     {
         String leftColor = "test1";
         String rightColor = "test2";
@@ -582,5 +602,5 @@ public class Auto_Color_Blue extends OpModeCamera{
         {
             return leftColor;
         }
-    }
+    }*/
 }
