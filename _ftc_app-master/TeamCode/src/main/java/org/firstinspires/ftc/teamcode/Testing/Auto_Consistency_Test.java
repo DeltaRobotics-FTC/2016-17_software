@@ -41,7 +41,7 @@ public class Auto_Consistency_Test extends OpModeCamera {
     double leftBoundary = 0;
     double rightBoundary = 0;
 
-    enum States {ReadBeacon, DriveToWhiteLine, PositionRobot, ShortForward, TurnToWhiteLine, TurnPastWhiteLine, StopRobot}
+    enum States {ReadBeacon, DriveToWhiteLine, PositionRobot, ShortForward, TurnToWhiteLine, TurnPastWhiteLine, ForwardToBeacon, StopRobot}
 
     States state;
 
@@ -70,6 +70,7 @@ public class Auto_Consistency_Test extends OpModeCamera {
     }
 
     public void loop() {
+        telemetry.addData("State", state);
 
         switch (state) {
             case DriveToWhiteLine:
@@ -92,7 +93,7 @@ public class Auto_Consistency_Test extends OpModeCamera {
                 break;
 
             case ShortForward:
-                if ((motorL.getCurrentPosition() > -50)) {
+                if ((motorL.getCurrentPosition() > -10)) {
                     motorLF.setPower(-.25);
                     motorL.setPower(-.25);
                     motorRF.setPower(.25);
@@ -143,16 +144,20 @@ public class Auto_Consistency_Test extends OpModeCamera {
                 break;
 
             case PositionRobot:
-                sleep(250);
+                sleep(100);
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);
                 motorR.setPower(0.0);
                 motorRF.setPower(0.0);
-                sleep(250);
+                sleep(100);
                 Bitmap rgbImage;
                 rgbImage = convertYuvImageToRgb(yuvImage, width, height, 1);
                 positionRobot = positionRobot(rgbImage);
-                for (int x = 0; x < 480; x++) {
+                theta = positionRobot[0];
+                topX = positionRobot[1];
+                telemetry.addData("Theta", theta);
+                telemetry.addData("Pivoting", topX - center);
+                /*for (int x = 0; x < 480; x++) {
                     for (int y = 0; y < 640; y++) {
 
                         if (y == positionRobot[11]) {
@@ -169,25 +174,35 @@ public class Auto_Consistency_Test extends OpModeCamera {
                         }
                     }
                 }
-                theta = positionRobot[0];
-                topX = positionRobot[1];
-                telemetry.addData("Theta", theta);
-                telemetry.addData("Pivoting", topX - center);
-                SaveImage(rgbImage);
-
-                if ((topX - center) < -20) {
-                    telemetry.addData("Pivot", "Left!");
-                    motorL.setPower(-0.20);
-                    motorLF.setPower(-0.20);
-                    motorR.setPower(-0.20);
-                    motorRF.setPower(-0.20);
+                SaveImage(rgbImage);*/
+                if ((topX - center) < -40) {
+                    telemetry.addData("Pivot Fast", "Left!");
+                    motorL.setPower(-0.50);
+                    motorLF.setPower(-0.50);
+                    motorR.setPower(-0.50);
+                    motorRF.setPower(-0.50);
                     break;
-                } else if (topX - center > 20) {
-                    telemetry.addData("Pivot", "Right!");
-                    motorL.setPower(0.20);
-                    motorLF.setPower(0.20);
-                    motorR.setPower(0.20);
-                    motorRF.setPower(0.20);
+                } else if ((topX - center) > 40) {
+                    telemetry.addData("Pivot Fast", "Right!");
+                    motorL.setPower(0.50);
+                    motorLF.setPower(0.50);
+                    motorR.setPower(0.50);
+                    motorRF.setPower(0.50);
+                    break;
+                }
+                else if ((topX - center) < -10) {
+                    telemetry.addData("Pivot Slow", "Left!");
+                    motorL.setPower(-0.30);
+                    motorLF.setPower(-0.30);
+                    motorR.setPower(-0.30);
+                    motorRF.setPower(-0.30);
+                    break;
+                } else if ((topX - center) > 10) {
+                    telemetry.addData("Pivot Slow", "Right!");
+                    motorL.setPower(0.30);
+                    motorLF.setPower(0.30);
+                    motorR.setPower(0.30);
+                    motorRF.setPower(0.30);
                     break;
                 } else {
                     telemetry.addData("Pivot", (topX - center));
@@ -213,7 +228,45 @@ public class Auto_Consistency_Test extends OpModeCamera {
                 beaconColorRight = beaconColors[1];
                 telemetry.addData("Left Color", beaconColorLeft);
                 telemetry.addData("Right Color", beaconColorRight);
+                if(beaconColorLeft == beaconColorRight)
+                {
+                    sleep(3000);
+                    telemetry.addData("Same Color", "WHY?????");
+                    break;
+                }
+                if(beaconColorLeft == "BLUE")
+                {
+                    bBP.setPosition(0.55);
+                    state = States.ForwardToBeacon;
+                    break;
+                }
+                if(beaconColorLeft == "RED")
+                {
+                    bBP.setPosition(0.9);
+                    state = States.ForwardToBeacon;
+                    break;
+                }
                 break;
+
+            case ForwardToBeacon:
+                if(ODS.getRawLightDetected() < .15)
+                {
+                    telemetry.addData("ODS_Raw_Light", ODS.getRawLightDetected());
+                    motorLF.setPower(-.15);
+                    motorL.setPower(-.15);
+                    motorRF.setPower(.15);
+                    motorR.setPower(.15);
+                    break;
+                }
+                else
+                {
+                    motorL.setPower(0.0);
+                    motorLF.setPower(0.0);
+                    motorR.setPower(0.0);
+                    motorRF.setPower(0.0);
+                    state = States.StopRobot;
+                    break;
+                }
 
             case StopRobot:
                 motorL.setPower(0.0);
@@ -237,26 +290,26 @@ public class Auto_Consistency_Test extends OpModeCamera {
 
             rgbImage = convertYuvImageToRgb(yuvImage, width, height, ds1);
 
-            if((topX - 75 < 0 ))
+            if((topX - 100 < 0 ))
             {
                 leftBoundary = 0;
             }
             else
             {
-                leftBoundary = topX - 75;
+                leftBoundary = topX - 100;
             }
 
-            if((topX + 75 > 480))
+            if((topX + 100 > 480))
             {
                 rightBoundary = 480;
             }
             else
             {
-                rightBoundary = topX + 75;
+                rightBoundary = topX + 100;
             }
             //Evaluating left side of screen/beacon
-            for (int x = (int)leftBoundary; x < topX; x++) {
-                for (int y = 160; y < 320; y++) {
+            for (int x = (int)leftBoundary; x < (topX - 20); x++) {
+                for (int y = 120; y < 270; y++) {
                     int pixelL = rgbImage.getPixel(x, y);
                     redValueLeft += red(pixelL);
                     blueValueLeft += blue(pixelL);
@@ -264,8 +317,8 @@ public class Auto_Consistency_Test extends OpModeCamera {
                 }
             }
             //Evaluating right side of screen/beacon
-            for (int a = (int)topX; a < rightBoundary; a++) {
-                for (int b = 160; b < 320; b++) {
+            for (int a = (int)(topX + 20); a < rightBoundary; a++) {
+                for (int b = 120; b < 270; b++) {
                     int pixelR = rgbImage.getPixel(a, b);
                     redValueRight += red(pixelR);
                     blueValueRight += blue(pixelR);
@@ -302,6 +355,27 @@ public class Auto_Consistency_Test extends OpModeCamera {
                 case 2:
                     colorStringRight = "BLUE";
             }
+            for (int x = 0; x < 480; x++) {
+                for (int y = 0; y < 640; y++) {
+
+                    if (x == leftBoundary) {
+                        rgbImage.setPixel(x, y, Color.rgb(255, 0, 0));
+                    }
+                    if (x == rightBoundary) {
+                        rgbImage.setPixel(x, y, Color.rgb(255, 0, 0));
+                    }
+                    if (x == topX - 20) {
+                        rgbImage.setPixel(x, y, Color.rgb(0, 0, 255));
+                    }
+                    if (x == topX + 20) {
+                        rgbImage.setPixel(x, y, Color.rgb(0, 0, 255));
+                    }
+                    if (y == 120 || y == 270) {
+                        rgbImage.setPixel(x, y, Color.rgb(0, 255, 0));
+                    }
+                }
+            }
+            SaveImage(rgbImage);
             endCondition[0] = colorStringLeft;
             endCondition[1] = colorStringRight;
 

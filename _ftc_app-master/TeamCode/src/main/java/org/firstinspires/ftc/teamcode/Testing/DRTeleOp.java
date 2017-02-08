@@ -43,17 +43,25 @@ public class DRTeleOp extends OpMode
         int cps = 0;
         int rev = 0;
         long timeConstant;
-        double launcherPower = -0.36;
+        long timeTest;
+        long timeTestConstant;
+        long loopTime;
+        long previousLoop = 0;
+        boolean firstTime = true;
+        double launcherPower = -0.47;
         boolean dPadLeftState = false;
         boolean dPadRightState = false;
         boolean test = true;
         boolean spinStart = false;
         boolean popperTime;
-        boolean autoAdjust = true;
+        boolean autoAdjust = false;
         long popperStart;
 
         int a = 0;
-        int p = 10;
+        int p = 5;
+        //p-Previous was 20
+        int t = 100;
+        //t-Previous was 10
 
         // Declares 2 float variables for the throttle
 
@@ -79,6 +87,15 @@ public class DRTeleOp extends OpMode
 
         @Override
         public void loop() {
+            timeTest = System.currentTimeMillis();
+            if(firstTime)
+            {
+                timeTestConstant = System.currentTimeMillis();
+                firstTime = false;
+            }
+            loopTime = timeTest - previousLoop;
+            previousLoop = timeTest;
+            telemetry.addData("Loop Time", loopTime);
 
             if(spinStart)
             {
@@ -89,22 +106,24 @@ public class DRTeleOp extends OpMode
             telemetry.addData("cps", cps);
             telemetry.addData("a", a);
             telemetry.addData("AutoAdjust", autoAdjust);
-            if(System.currentTimeMillis() - timeConstant > 50)
+            telemetry.addData("Encoder Count", launcherWheel.getCurrentPosition());
+            telemetry.addData("Encoder Change", encoderCount);
+            if(System.currentTimeMillis() - timeConstant > t)
             {
                 if (spinning) {
                     timeConstant = System.currentTimeMillis();
                     encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
                     lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
                     //****For Not Averaging****//
-                    cps = encoderCount * 20;
+                    cps = encoderCount * (1000/t);
                     //****For Averaging****//
                     a = ((a * (p - 1) + cps) / p);
                     if (a < -1800 && autoAdjust)
                     {
-                        if (a > -2000) {
+                        if (a > -2150) {
                             launcherPower -= .002;
                         }
-                        if (a < -2075) {
+                        if (a < -2250) {
                             launcherPower += .002;
                         }
                     }
@@ -217,7 +236,7 @@ public class DRTeleOp extends OpMode
             }
 
             //Setting the Popper Position
-            if (gamepad2.right_trigger > 0.8 && a < -2000 && a > -2075 && cps > -2100)
+            if (gamepad2.right_trigger > 0.8 && a < -2150 && a > -2250 && cps > -2150)
             {
 
                 popperTime = true;
@@ -348,12 +367,13 @@ public class DRTeleOp extends OpMode
 
             bBP.setPosition(bBPvalue);
 
-            //telemetry.addData("bBP Position", bBPvalue);
+            telemetry.addData("bBP Position", bBPvalue);
             //telemetry.addData("Popper Position", popperPosition);
             //telemetry.addData("Collector Power", collector.getPower());
             telemetry.addData("Launcher Wheel (the motor)", launcherWheel.getPower());
             telemetry.addData("Launcher Power (the variable)", launcherPower);
             telemetry.addData("Drive", drive);
+
             //telemetry.addData("Lift Power", motorLift.getPower());
 
                 // Sets the appropriate motors to the appropriate variables

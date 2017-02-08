@@ -40,6 +40,13 @@ public class Basic_Auto_Blue extends OpMode
     boolean testloop = true;
     boolean test3 = true;
 
+
+    int avg = 0;
+    int p = 5;
+    //p-Previous was 20
+    int t = 100;
+    //t-Previous was 10
+
     double launcherPower = 0;
 
     enum states {DRIVE1, STOP, TURN, DRIVE2, SHOOT1, SHOOT2, SHOOT}
@@ -64,18 +71,21 @@ public class Basic_Auto_Blue extends OpMode
             testloop = false;
         }
 
-        if(System.currentTimeMillis() - constant > 100)
+        if(System.currentTimeMillis() - constant > t)
         {
             rev++; //Making sure that the loop keeps running
             constant = System.currentTimeMillis(); //Resetting current time for calculating time difference
             encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
             lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
-            cps = encoderCount * 10; //Converting from milliseconds to seconds
+            cps = encoderCount * (1000/t);
+            //****For Averaging****//
+            avg = ((avg * (p - 1) + cps) / p);
 
         }
         telemetry.addData("Rev", rev);
         telemetry.addData("Encoder Position", launcherWheel.getCurrentPosition());
         telemetry.addData("CPS", cps);
+        telemetry.addData("Avg", avg);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
         collector.setPower(.8);
 
@@ -83,7 +93,7 @@ public class Basic_Auto_Blue extends OpMode
         {
             case DRIVE1:
                 //Changed from 700 for testing
-                if (motorL.getCurrentPosition() > 3000)
+                if (motorL.getCurrentPosition() > 650)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
@@ -108,10 +118,10 @@ public class Basic_Auto_Blue extends OpMode
                     motorR.setDirection(DcMotorSimple.Direction.REVERSE);
                     motorLF.setDirection(DcMotorSimple.Direction.FORWARD);
                     motorRF.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorR.setPower(0.2);
-                    motorL.setPower(0.2);
-                    motorRF.setPower(0.2);
-                    motorLF.setPower(0.2);
+                    motorR.setPower(0.4);
+                    motorL.setPower(0.4);
+                    motorRF.setPower(0.4);
+                    motorLF.setPower(0.4);
                     break;
                 }
                 break;
@@ -119,21 +129,27 @@ public class Basic_Auto_Blue extends OpMode
             {
                 if(test)
                 {
-                    c = System.currentTimeMillis();
+                    //c = System.currentTimeMillis();
                     test = false;
-                    launcherPower = -.4;
+                    launcherPower = -.47;
                     launcherWheel.setPower(launcherPower);
+                    //avg = launcherWheel.getCurrentPosition();
                 }
+
+                /*
                 a = System.currentTimeMillis();
                 if((a - c) < 2000)
                 {
                     break;
                 }
+
                 else
                 {
+                */
                     if(count < 2)
                     {
-                        if (cps < -2000 && cps > -2100) {
+                        if (avg < -2150 && avg > -2250)
+                        {
                             count++;
                             state = states.SHOOT2;
                         }
@@ -145,17 +161,17 @@ public class Basic_Auto_Blue extends OpMode
                                 test3 = false;
                             }
                             a2 = System.currentTimeMillis();
-                            if((a2 - c2) < 1000)
+                            if((a2 - c2) < t)
                             {
                                 break;
                             }
                             else
                             {
-                                if (cps < -2100) {
-                                    launcherPower = launcherPower + .01;
+                                if (avg < -2250) {
+                                    launcherPower = launcherPower + .002;
                                 }
-                                if (cps > -2000) {
-                                    launcherPower = launcherPower - .01;
+                                if (avg > -2150) {
+                                    launcherPower = launcherPower - .002;
                                 }
                                 launcherWheel.setPower(launcherPower);
                                 test3 = true;
@@ -173,7 +189,7 @@ public class Basic_Auto_Blue extends OpMode
                         break;
                     }
                     break;
-                }
+                //}
             }
 
             case SHOOT2:
@@ -191,7 +207,7 @@ public class Basic_Auto_Blue extends OpMode
                 else
                 {
                     popper.setPosition(popperDown);
-                    launcherWheel.setPower(0.00);
+                    //launcherWheel.setPower(0.00);
                     state = states.SHOOT;
                     test = true;
                     test1 = true;
@@ -199,7 +215,7 @@ public class Basic_Auto_Blue extends OpMode
                     break;
 
             case TURN:
-                if(motorL.getCurrentPosition() < -50)
+                if(motorL.getCurrentPosition() < -75)
                 {
                     state = states.DRIVE2;
                     motorR.setPower(0.0);
