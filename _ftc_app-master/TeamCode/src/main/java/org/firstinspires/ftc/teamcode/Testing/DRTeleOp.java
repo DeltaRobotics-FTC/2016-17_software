@@ -54,7 +54,7 @@ public class DRTeleOp extends OpMode
         boolean test = true;
         boolean spinStart = false;
         boolean popperTime;
-        boolean autoAdjust = false;
+        boolean autoAdjust = true;
         long popperStart;
 
         int a = 0;

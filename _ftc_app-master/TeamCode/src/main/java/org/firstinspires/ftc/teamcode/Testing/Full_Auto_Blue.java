@@ -16,8 +16,8 @@ import for_camera_opmodes.OpModeCamera;
 /**
  * Created by RoboticsUser on 1/26/2017.
  */
-@Autonomous (name = "Auto_Consistency_Test", group = "")
-public class Auto_Consistency_Test extends OpModeCamera {
+@Autonomous (name = "Full_Auto_Blue_1", group = "")
+public class Full_Auto_Blue extends OpModeCamera {
     DcMotor motorL;
     DcMotor motorLF;
     DcMotor motorR;
@@ -41,7 +41,32 @@ public class Auto_Consistency_Test extends OpModeCamera {
     double leftBoundary = 0;
     double rightBoundary = 0;
 
-    enum States {ReadBeacon, DriveToWhiteLine, PositionRobot, ShortForward, TurnToWhiteLine, TurnPastWhiteLine, ForwardToBeacon, StopRobot}
+    int x = 0;
+    int count = 0;
+    int rev = 0;
+    boolean test = true;
+    boolean test1 = true;
+    boolean testloop = true;
+    boolean test3 = true;
+    double constant = 0;
+    int lastE = 0;
+    int encoderCount;
+    int cps = 0;
+    long a2 = 0;
+    long c2 = 0;
+    long c = 0;
+    long a = 0;
+    double popperUp = 0.99;
+    double popperDown = 0.8;
+    int avg = 0;
+    int p = 5;
+    //p-Previous was 20
+    int t = 100;
+    //t-Previous was 10
+
+    double launcherPower = 0;
+
+    enum States {ReadBeacon, DriveToWhiteLine, PositionRobot, ShortForward, TurnToWhiteLine, TurnPastWhiteLine, ForwardToBeacon, StopRobot, SHOOT, SHOOT2}
 
     States state;
 
@@ -70,7 +95,23 @@ public class Auto_Consistency_Test extends OpModeCamera {
     }
 
     public void loop() {
+        if (testloop) {
+            constant = System.currentTimeMillis();
+            testloop = false;
+        }
+
         telemetry.addData("State", state);
+        if(System.currentTimeMillis() - constant > t)
+        {
+            rev++; //Making sure that the loop keeps running
+            constant = System.currentTimeMillis(); //Resetting current time for calculating time difference
+            encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
+            lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
+            cps = encoderCount * (1000/t);
+            //****For Averaging****//
+            avg = ((avg * (p - 1) + cps) / p);
+
+        }
 
         switch (state) {
             case DriveToWhiteLine:
@@ -213,7 +254,6 @@ public class Auto_Consistency_Test extends OpModeCamera {
                     state = States.ReadBeacon;
                     break;
                 }
-
                     /*
                     telemetry.addData("Theta", positionRobot[0]);
                     telemetry.addData("TopX", positionRobot[1]);
@@ -228,19 +268,19 @@ public class Auto_Consistency_Test extends OpModeCamera {
                 beaconColorRight = beaconColors[1];
                 telemetry.addData("Left Color", beaconColorLeft);
                 telemetry.addData("Right Color", beaconColorRight);
-                if(beaconColorLeft == beaconColorRight)
+                if(beaconColorLeft.equals(beaconColorRight))
                 {
                     sleep(3000);
-                    telemetry.addData("Same Color", "WHY?????");
+                    telemetry.addData("Same Color", "Why?");
                     break;
                 }
-                if(beaconColorLeft == "BLUE")
+                if(beaconColorLeft.equals("BLUE"))
                 {
                     bBP.setPosition(0.55);
                     state = States.ForwardToBeacon;
                     break;
                 }
-                if(beaconColorLeft == "RED")
+                if(beaconColorLeft.equals("RED"))
                 {
                     bBP.setPosition(0.9);
                     state = States.ForwardToBeacon;
@@ -264,9 +304,97 @@ public class Auto_Consistency_Test extends OpModeCamera {
                     motorLF.setPower(0.0);
                     motorR.setPower(0.0);
                     motorRF.setPower(0.0);
+                    state = States.SHOOT;
+                    break;
+                }
+            case SHOOT:
+            {
+                if(test)
+                {
+                    //c = System.currentTimeMillis();
+                    test = false;
+                    launcherPower = -.47;
+                    launcherWheel.setPower(launcherPower);
+                    //avg = launcherWheel.getCurrentPosition();
+                }
+
+                /*
+                a = System.currentTimeMillis();
+                if((a - c) < 2000)
+                {
+                    break;
+                }
+
+                else
+                {
+                */
+                if(count < 2)
+                {
+                    if (avg < -2150 && avg > -2250)
+                    {
+                        count++;
+                        state = States.SHOOT2;
+                    }
+                    else
+                    {
+                        if(test3)
+                        {
+                            c2 = System.currentTimeMillis();
+                            test3 = false;
+                        }
+                        a2 = System.currentTimeMillis();
+                        if((a2 - c2) < t)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            if (avg < -2250) {
+                                launcherPower = launcherPower + .002;
+                            }
+                            if (avg > -2150) {
+                                launcherPower = launcherPower - .002;
+                            }
+                            launcherWheel.setPower(launcherPower);
+                            test3 = true;
+                        }
+
+                        break;
+                    }
+
+                    test = true;
+                }
+                else
+                {
+                    launcherWheel.setPower(0);
                     state = States.StopRobot;
                     break;
                 }
+                break;
+                //}
+            }
+
+            case SHOOT2:
+                if(test1)
+                {
+                    c = System.currentTimeMillis();
+                    test1 = false;
+                }
+                popper.setPosition(popperUp);
+                a = System.currentTimeMillis();
+                if((a - c) < 1000)
+                {
+                    break;
+                }
+                else
+                {
+                    popper.setPosition(popperDown);
+                    //launcherWheel.setPower(0.00);
+                    state = States.SHOOT;
+                    test = true;
+                    test1 = true;
+                }
+                break;
 
             case StopRobot:
                 motorL.setPower(0.0);

@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 11/1/2016.
  */
-@Autonomous (name = "Basic_Auto_Blue", group = "Basic Autonomous")
-public class Basic_Auto_Blue extends OpMode
+@Autonomous (name = "Basic_Auto_15sec", group = "Basic Autonomous")
+public class Basic_Auto_15sec extends OpMode
 {
     DcMotor motorL;
     DcMotor motorLF;
@@ -40,6 +40,10 @@ public class Basic_Auto_Blue extends OpMode
     boolean testloop = true;
     boolean test3 = true;
 
+    long waitStart;
+    long waitCurrent = 0;
+    long waitEnd = 15000;
+
 
     int avg = 0;
     int p = 5;
@@ -49,11 +53,11 @@ public class Basic_Auto_Blue extends OpMode
 
     double launcherPower = 0;
 
-    enum states {DRIVE1, STOP, TURN, DRIVE2, SHOOT1, SHOOT2, SHOOT}
+    enum states {WAIT, DRIVE1, STOP, TURN, DRIVE2, SHOOT1, SHOOT2, SHOOT}
     states state;
 
     public void init() {
-        state = states.DRIVE1;
+        state = states.WAIT;
         motorL = hardwareMap.dcMotor.get("motorL");
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorR = hardwareMap.dcMotor.get("motorR");
@@ -67,6 +71,7 @@ public class Basic_Auto_Blue extends OpMode
     public void loop()
     {
         if (testloop) {
+            waitStart = System.currentTimeMillis();
             constant = System.currentTimeMillis();
             testloop = false;
         }
@@ -91,6 +96,17 @@ public class Basic_Auto_Blue extends OpMode
 
         switch (state)
         {
+            case WAIT:
+                waitCurrent = System.currentTimeMillis();
+                if(waitCurrent - waitStart < waitEnd)
+                {
+                    collector.setPower(0.8);
+                }
+                else
+                {
+                    state = states.DRIVE1;
+                }
+                break;
             case DRIVE1:
                 //Changed from 700 for testing
                 if (motorL.getCurrentPosition() > 650)
@@ -125,7 +141,6 @@ public class Basic_Auto_Blue extends OpMode
                     break;
                 }
                 break;
-
             case SHOOT:
             {
                 if(test)
@@ -214,6 +229,7 @@ public class Basic_Auto_Blue extends OpMode
                     test1 = true;
                 }
                 break;
+
             case TURN:
                 if(motorL.getCurrentPosition() < -75)
                 {
