@@ -28,9 +28,9 @@ public class DRTeleOp extends OpMode
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
         double bBPvalue = 0.079;
-        double popperUp = 0.99;
-        double popperDown = 0.8;
-        double popperPosition = 0.8;
+        double popperUp = 0.9;
+        double popperDown = 0.7;
+        double popperPosition = 0.7;
 
         boolean bBpStop = false;
         boolean drive = true;
@@ -108,23 +108,24 @@ public class DRTeleOp extends OpMode
             telemetry.addData("AutoAdjust", autoAdjust);
             telemetry.addData("Encoder Count", launcherWheel.getCurrentPosition());
             telemetry.addData("Encoder Change", encoderCount);
-            if(System.currentTimeMillis() - timeConstant > t)
+
+            if(System.currentTimeMillis() - timeConstant > t) //Time-check for cps
             {
                 if (spinning) {
-                    timeConstant = System.currentTimeMillis();
+                    timeConstant = System.currentTimeMillis(); //Reset time-check for cps
                     encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
                     lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
                     //****For Not Averaging****//
                     cps = encoderCount * (1000/t);
                     //****For Averaging****//
                     a = ((a * (p - 1) + cps) / p);
-                    if (a < -1800 && autoAdjust)
+                    if (a < -500 && autoAdjust) //Was -1800 on old flywheel
                     {
                         if (a > -2150) {
                             launcherPower -= .002;
                         }
                         if (a < -2250) {
-                            launcherPower += .002;
+                            launcherPower += .005;
                         }
                     }
                 }
@@ -236,7 +237,7 @@ public class DRTeleOp extends OpMode
             }
 
             //Setting the Popper Position
-            if (gamepad2.right_trigger > 0.8 && a < -2150 && a > -2250 && cps > -2150)
+            if ((gamepad2.right_trigger > 0.8 && a < -2150 && a > -2250 && cps < -2150))// || (gamepad2.right_trigger > 0.8 && !autoAdjust))
             {
 
                 popperTime = true;
@@ -368,7 +369,7 @@ public class DRTeleOp extends OpMode
             bBP.setPosition(bBPvalue);
 
             telemetry.addData("bBP Position", bBPvalue);
-            //telemetry.addData("Popper Position", popperPosition);
+            telemetry.addData("Popper Position", popperPosition);
             //telemetry.addData("Collector Power", collector.getPower());
             telemetry.addData("Launcher Wheel (the motor)", launcherWheel.getPower());
             telemetry.addData("Launcher Power (the variable)", launcherPower);
