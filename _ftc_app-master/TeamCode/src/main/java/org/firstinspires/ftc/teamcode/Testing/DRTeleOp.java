@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.robocol.PeerApp;
 import com.qualcomm.robotcore.util.Range;
 
 /**
@@ -22,13 +23,14 @@ public class DRTeleOp extends OpMode
         DcMotor collector;
         Servo popper;
         Servo bBP;
+        Servo boot;
 
         float throttleLeft = 0;
         float throttleRight = 0;
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
         double bBPvalue = 0.079;
-        double popperUp = 0.9;
+        double popperUp = 0.88;
         double popperDown = 0.7;
         double popperPosition = 0.7;
 
@@ -57,6 +59,11 @@ public class DRTeleOp extends OpMode
         boolean autoAdjust = true;
         long popperStart;
 
+        double bootUp = .80;
+        double bootDown = .1;
+        double bootPosition;
+        boolean bootOut = true;
+
         int a = 0;
         int p = 5;
         //p-Previous was 20
@@ -79,7 +86,9 @@ public class DRTeleOp extends OpMode
             launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
             collector = hardwareMap.dcMotor.get("collector");
             popper = hardwareMap.servo.get("popper");
+            boot = hardwareMap.servo.get("boot");
             popper.setPosition(popperDown);
+            boot.setPosition(bootDown);
 
             bBP.setPosition(bBPvalue);
             // Adds the components you previously initialized to the config
@@ -92,6 +101,7 @@ public class DRTeleOp extends OpMode
             {
                 timeTestConstant = System.currentTimeMillis();
                 firstTime = false;
+                bootPosition = bootDown;
             }
             loopTime = timeTest - previousLoop;
             previousLoop = timeTest;
@@ -131,12 +141,12 @@ public class DRTeleOp extends OpMode
                 }
             }
 
-            if(gamepad1.dpad_right)
+            if(gamepad1.right_bumper)
             {
                 collectback = true;
             }
 
-            if(gamepad1.dpad_left)
+            if(gamepad1.left_bumper)
             {
                 collectback = false;
             }
@@ -169,6 +179,16 @@ public class DRTeleOp extends OpMode
             if (gamepad1.left_trigger > 0.75)
             {
                 collecting = false;
+            }
+
+            if(gamepad1.dpad_right)
+            {
+                bootOut = true;
+            }
+
+            if(gamepad1.dpad_left)
+            {
+                bootOut = false;
             }
 
 
@@ -236,6 +256,14 @@ public class DRTeleOp extends OpMode
                 launcherWheel.setPower(0);
             }
 
+            if(bootOut)
+            {
+                bootPosition = bootDown;
+            }
+            if(!bootOut)
+            {
+                bootPosition = bootUp;
+            }
             //Setting the Popper Position
             if ((gamepad2.right_trigger > 0.8 && a < -2150 && a > -2250 && cps < -2150))// || (gamepad2.right_trigger > 0.8 && !autoAdjust))
             {
@@ -367,6 +395,7 @@ public class DRTeleOp extends OpMode
                     }
 
             bBP.setPosition(bBPvalue);
+            boot.setPosition(bootPosition);
 
             telemetry.addData("bBP Position", bBPvalue);
             telemetry.addData("Popper Position", popperPosition);
@@ -375,6 +404,7 @@ public class DRTeleOp extends OpMode
             telemetry.addData("Launcher Power (the variable)", launcherPower);
             telemetry.addData("Drive", drive);
 
+            telemetry.addData("Boot Position", bootPosition);
             //telemetry.addData("Lift Power", motorLift.getPower());
 
                 // Sets the appropriate motors to the appropriate variables

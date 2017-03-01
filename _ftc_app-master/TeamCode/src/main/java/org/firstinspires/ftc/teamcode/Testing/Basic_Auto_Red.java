@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 11/1/2016.
  */
-//@Autonomous (name = "Basic_Auto_Red", group = "Basic Autonomous")
+@Autonomous (name = "Basic_Auto_Red", group = "Basic Autonomous")
 public class Basic_Auto_Red extends OpMode
 {
     DcMotor motorL;
@@ -29,8 +29,8 @@ public class Basic_Auto_Red extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.99;
-    double popperDown = 0.8;
+    double popperUp = .88;
+    double popperDown = 0.7;
 
     int x = 0;
     int count = 0;
@@ -39,6 +39,13 @@ public class Basic_Auto_Red extends OpMode
     boolean test1 = true;
     boolean testloop = true;
     boolean test3 = true;
+
+
+    int avg = 0;
+    int p = 5;
+    //p-Previous was 20
+    int t = 100;
+    //t-Previous was 10
 
     double launcherPower = 0;
 
@@ -64,25 +71,29 @@ public class Basic_Auto_Red extends OpMode
             testloop = false;
         }
 
-        if(System.currentTimeMillis() - constant > 100)
+        if(System.currentTimeMillis() - constant > t)
         {
             rev++; //Making sure that the loop keeps running
             constant = System.currentTimeMillis(); //Resetting current time for calculating time difference
             encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
             lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
-            cps = encoderCount * 10; //Converting from milliseconds to seconds
+            cps = encoderCount * (1000/t);
+            //****For Averaging****//
+            avg = ((avg * (p - 1) + cps) / p);
 
         }
         telemetry.addData("Rev", rev);
         telemetry.addData("Encoder Position", launcherWheel.getCurrentPosition());
         telemetry.addData("CPS", cps);
+        telemetry.addData("Avg", avg);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
         collector.setPower(.8);
 
         switch (state)
         {
             case DRIVE1:
-                if (motorL.getCurrentPosition() > 700)
+                //Changed from 700 for testing
+                if (motorL.getCurrentPosition() > 650)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
@@ -114,65 +125,72 @@ public class Basic_Auto_Red extends OpMode
                     break;
                 }
                 break;
+
             case SHOOT:
             {
                 if(test)
                 {
-                    c = System.currentTimeMillis();
+                    //c = System.currentTimeMillis();
                     test = false;
-                    launcherPower = -.4;
+                    launcherPower = -.47;
                     launcherWheel.setPower(launcherPower);
+                    //avg = launcherWheel.getCurrentPosition();
                 }
+
+                /*
                 a = System.currentTimeMillis();
                 if((a - c) < 2000)
                 {
                     break;
                 }
+
                 else
                 {
-                    if(count < 2)
+                */
+                if(count < 2)
+                {
+                    if (avg < -2150 && avg > -2250)
                     {
-                        if (cps < -2000 && cps > -2100) {
-                            count++;
-                            state = states.SHOOT2;
-                        }
-                        else
-                        {
-                            if(test3)
-                            {
-                                c2 = System.currentTimeMillis();
-                                test3 = false;
-                            }
-                            a2 = System.currentTimeMillis();
-                            if((a2 - c2) < 1000)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                if (cps < -2100) {
-                                    launcherPower = launcherPower + .01;
-                                }
-                                if (cps > -2000) {
-                                    launcherPower = launcherPower - .01;
-                                }
-                                launcherWheel.setPower(launcherPower);
-                                test3 = true;
-                            }
-
-                            break;
-                        }
-
-                        test = true;
+                        count++;
+                        state = states.SHOOT2;
                     }
                     else
                     {
-                        launcherWheel.setPower(0);
-                        state = states.TURN;
+                        if(test3)
+                        {
+                            c2 = System.currentTimeMillis();
+                            test3 = false;
+                        }
+                        a2 = System.currentTimeMillis();
+                        if((a2 - c2) < t)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            if (avg < -2250) {
+                                launcherPower = launcherPower + .002;
+                            }
+                            if (avg > -2150) {
+                                launcherPower = launcherPower - .002;
+                            }
+                            launcherWheel.setPower(launcherPower);
+                            test3 = true;
+                        }
+
                         break;
                     }
+
+                    test = true;
+                }
+                else
+                {
+                    launcherWheel.setPower(0);
+                    state = states.TURN;
                     break;
                 }
+                break;
+                //}
             }
 
             case SHOOT2:
@@ -190,15 +208,14 @@ public class Basic_Auto_Red extends OpMode
                 else
                 {
                     popper.setPosition(popperDown);
-                    launcherWheel.setPower(0.00);
+                    //launcherWheel.setPower(0.00);
                     state = states.SHOOT;
                     test = true;
                     test1 = true;
                 }
                 break;
-
             case TURN:
-                if(motorR.getCurrentPosition() < -50)
+                if(motorL.getCurrentPosition() < -50)
                 {
                     state = states.DRIVE2;
                     motorR.setPower(0.0);
@@ -223,15 +240,15 @@ public class Basic_Auto_Red extends OpMode
                     motorR.setDirection(DcMotorSimple.Direction.REVERSE);
                     motorLF.setDirection(DcMotorSimple.Direction.FORWARD);
                     motorRF.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorR.setPower(-0.4);
-                    motorL.setPower(.4);
-                    motorRF.setPower(-0.4);
-                    motorLF.setPower(.4);
+                    motorR.setPower(0.4);
+                    motorL.setPower(-.4);
+                    motorRF.setPower(0.4);
+                    motorLF.setPower(-.4);
                     break;
                 }
 
             case DRIVE2:
-                if (motorL.getCurrentPosition() > 1375)
+                if (motorL.getCurrentPosition() > 1500)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);

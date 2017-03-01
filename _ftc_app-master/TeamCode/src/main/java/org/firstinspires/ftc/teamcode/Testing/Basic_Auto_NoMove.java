@@ -29,8 +29,8 @@ public class Basic_Auto_NoMove extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.99;
-    double popperDown = 0.8;
+    double popperUp = 0.88;
+    double popperDown = 0.7;
 
     int x = 0;
     int count = 0;
@@ -215,7 +215,7 @@ public class Basic_Auto_NoMove extends OpMode
                 }
                 break;
             case TURN:
-                if(motorL.getCurrentPosition() < -75)
+                if(motorL.getCurrentPosition() < -50)
                 {
                     state = states.DRIVE2;
                     motorR.setPower(0.0);
@@ -248,7 +248,7 @@ public class Basic_Auto_NoMove extends OpMode
                 }
 
             case DRIVE2:
-                if (motorL.getCurrentPosition() > 1375)
+                if (motorL.getCurrentPosition() > 1500)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);

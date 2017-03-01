@@ -29,8 +29,8 @@ public class Basic_Auto_Blue extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.99;
-    double popperDown = 0.8;
+    double popperUp = 0.88;
+    double popperDown = 0.7;
 
     int x = 0;
     int count = 0;
@@ -132,7 +132,7 @@ public class Basic_Auto_Blue extends OpMode
                 {
                     //c = System.currentTimeMillis();
                     test = false;
-                    launcherPower = -.47;
+                    launcherPower = -0.47;
                     launcherWheel.setPower(launcherPower);
                     //avg = launcherWheel.getCurrentPosition();
                 }
@@ -215,7 +215,7 @@ public class Basic_Auto_Blue extends OpMode
                 }
                 break;
             case TURN:
-                if(motorL.getCurrentPosition() < -75)
+                if(motorL.getCurrentPosition() < -50)
                 {
                     state = states.DRIVE2;
                     motorR.setPower(0.0);
@@ -241,14 +241,14 @@ public class Basic_Auto_Blue extends OpMode
                     motorLF.setDirection(DcMotorSimple.Direction.FORWARD);
                     motorRF.setDirection(DcMotorSimple.Direction.REVERSE);
                     motorR.setPower(0.4);
-                    motorL.setPower(-.4);
+                    motorL.setPower(-0.4);
                     motorRF.setPower(0.4);
-                    motorLF.setPower(-.4);
+                    motorLF.setPower(-0.4);
                     break;
                 }
 
             case DRIVE2:
-                if (motorL.getCurrentPosition() > 1375)
+                if (motorL.getCurrentPosition() > 1500)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
