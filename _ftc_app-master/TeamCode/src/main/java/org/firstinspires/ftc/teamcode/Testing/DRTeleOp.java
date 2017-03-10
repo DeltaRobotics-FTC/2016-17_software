@@ -29,9 +29,10 @@ public class DRTeleOp extends OpMode
         float throttleRight = 0;
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
+        //double bBPvalue = 0.7;
         double bBPvalue = 0.079;
-        double popperUp = 0.88;
-        double popperDown = 0.7;
+        double popperUp = 0.89;
+        double popperDown = 0.68;
         double popperPosition = 0.7;
 
         boolean bBpStop = false;
