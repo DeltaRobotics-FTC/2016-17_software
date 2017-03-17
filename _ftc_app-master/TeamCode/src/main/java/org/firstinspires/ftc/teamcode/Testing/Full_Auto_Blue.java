@@ -57,8 +57,8 @@ public class Full_Auto_Blue extends OpModeCamera {
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.9;
-    double popperDown = 0.7;
+    double popperUp = 0.7;
+    double popperDown = 0.84;
     int avg = 0;
     int p = 5;
     //p-Previous was 20
@@ -192,10 +192,10 @@ public class Full_Auto_Blue extends OpModeCamera {
                 }*/
                 while(motorR.getCurrentPosition() < 220)
                 {
-                    motorLF.setPower(.65);
-                    motorL.setPower(.65);
-                    motorRF.setPower(.65);
-                    motorR.setPower(.65);
+                    motorLF.setPower(1);
+                    motorL.setPower(1);
+                    motorRF.setPower(1);
+                    motorR.setPower(1);
                 }
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);
@@ -277,10 +277,10 @@ public class Full_Auto_Blue extends OpModeCamera {
                 }*/
                 while(motorR.getCurrentPosition() < 150)
                 {
-                    motorLF.setPower(.65);
-                    motorL.setPower(.65);
-                    motorRF.setPower(.65);
-                    motorR.setPower(.65);
+                    motorLF.setPower(1);
+                    motorL.setPower(1);
+                    motorRF.setPower(1);
+                    motorR.setPower(1);
                 }
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);

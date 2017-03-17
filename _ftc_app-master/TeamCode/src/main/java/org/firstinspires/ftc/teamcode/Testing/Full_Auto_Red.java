@@ -34,7 +34,7 @@ public class Full_Auto_Red extends OpModeCamera {
     String beaconColorRight = "ERROR";
     String[] beaconColors = new String[2];
     double[] positionRobot = new double[20];
-    int center = 330;
+    int center = 200;
     double theta = 112358;
     double topX = 132134;
     int ds1 = 1;
@@ -57,8 +57,8 @@ public class Full_Auto_Red extends OpModeCamera {
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.9;
-    double popperDown = 0.7;
+    double popperUp = 0.7;
+    double popperDown = 0.84;
     int avg = 0;
     int p = 5;
     //p-Previous was 20
@@ -70,7 +70,6 @@ public class Full_Auto_Red extends OpModeCamera {
     int turn1Telemetry = 0;
     int longForwardTelemetry = 0;
     int TurntoWhiteLineTelemetry = 0;
-
 
     double distance;
     double launcherPower = 0;
@@ -199,10 +198,10 @@ public class Full_Auto_Red extends OpModeCamera {
                 }*/
                 while(motorL.getCurrentPosition() > -300)
                 {
-                    motorLF.setPower(-.65);
-                    motorL.setPower(-.65);
-                    motorRF.setPower(-.65);
-                    motorR.setPower(-.65);
+                    motorLF.setPower(-.8);
+                    motorL.setPower(-.8);
+                    motorRF.setPower(-.8);
+                    motorR.setPower(-.8);
                 }
                 telemetry.addData("Turn1", motorL.getCurrentPosition());
                 motorL.setPower(0.0);
@@ -259,12 +258,12 @@ public class Full_Auto_Red extends OpModeCamera {
                 break;
 
             case TurnToWhiteLine:
-                while(motorL.getCurrentPosition() > -300)
+                while(motorL.getCurrentPosition() > -150)
                 {
-                    motorLF.setPower(-.65);
-                    motorL.setPower(-.65);
-                    motorRF.setPower(-.65);
-                    motorR.setPower(-.65);
+                    motorLF.setPower(-.8);
+                    motorL.setPower(-.8);
+                    motorRF.setPower(-.8);
+                    motorR.setPower(-.8);
                 }
                 telemetry.addData("TurnToWhiteLine", motorL.getCurrentPosition());
                 motorL.setPower(0.0);
@@ -311,19 +310,19 @@ public class Full_Auto_Red extends OpModeCamera {
                     SaveImage(rgbImage);*/
                 if ((topX - center) < -30) {
                     telemetry.addData("Pivot Fast", "Left!");
-                    motorL.setPower(-.30);
-                    motorLF.setPower(-.30);
-                    motorR.setPower(-.30);
-                    motorRF.setPower(-.30);
+                    motorL.setPower(-.25);
+                    motorLF.setPower(-.25);
+                    motorR.setPower(-.25);
+                    motorRF.setPower(-.25);
                     sleep(200);
                     break;
 
                 } else if ((topX - center) > 30) {
                     telemetry.addData("Pivot Fast", "Right!");
-                    motorL.setPower(.30);
-                    motorLF.setPower(.30);
-                    motorR.setPower(.30);
-                    motorRF.setPower(.30);
+                    motorL.setPower(.25);
+                    motorLF.setPower(.25);
+                    motorR.setPower(.25);
+                    motorRF.setPower(.25);
                     sleep(200);
                     break;
                 }
@@ -395,14 +394,14 @@ public class Full_Auto_Red extends OpModeCamera {
                     break;*/
                     if(beaconColorRight.equals("BLUE"))
                     {
-                        bBP.setPosition(0.6);
+                        bBP.setPosition(0.48);
                         state = States.ForwardToBeacon;
                         sleep(500);
                         break;
                     }
                     if(beaconColorRight.equals("RED"))
                     {
-                        bBP.setPosition(0.9);
+                        bBP.setPosition(0.7);
                         state = States.ForwardToBeacon;
                         sleep(500);
                         break;
@@ -410,14 +409,14 @@ public class Full_Auto_Red extends OpModeCamera {
                 }
                 if(beaconColorLeft.equals("BLUE"))
                 {
-                    bBP.setPosition(0.9);
+                    bBP.setPosition(0.7);
                     state = States.ForwardToBeacon;
                     sleep(500);
                     break;
                 }
                 if(beaconColorLeft.equals("RED"))
                 {
-                    bBP.setPosition(0.6);
+                    bBP.setPosition(0.48);
                     state = States.ForwardToBeacon;
                     sleep(500);
                     break;

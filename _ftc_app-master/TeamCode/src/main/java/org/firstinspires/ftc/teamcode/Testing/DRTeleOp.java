@@ -21,19 +21,20 @@ public class DRTeleOp extends OpMode
         DcMotor launcherWheel;
         DcMotor motorLift;
         DcMotor collector;
+        DcMotor capLift;
         Servo popper;
         Servo bBP;
         Servo boot;
+
 
         float throttleLeft = 0;
         float throttleRight = 0;
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
-        //double bBPvalue = 0.7;
         double bBPvalue = 0.079;
-        double popperUp = 0.89;
-        double popperDown = 0.68;
-        double popperPosition = 0.7;
+        double popperUp = 0.7;
+        double popperDown = 0.84;
+        double popperPosition = 0.84;
 
         boolean bBpStop = false;
         boolean drive = true;
@@ -52,6 +53,7 @@ public class DRTeleOp extends OpMode
         long previousLoop = 0;
         boolean firstTime = true;
         double launcherPower = -0.47;
+        double capLiftPower = 0;
         boolean dPadLeftState = false;
         boolean dPadRightState = false;
         boolean test = true;
@@ -88,6 +90,7 @@ public class DRTeleOp extends OpMode
             collector = hardwareMap.dcMotor.get("collector");
             popper = hardwareMap.servo.get("popper");
             boot = hardwareMap.servo.get("boot");
+            capLift = hardwareMap.dcMotor.get("capLift");
             popper.setPosition(popperDown);
             boot.setPosition(bootDown);
 
@@ -337,6 +340,18 @@ public class DRTeleOp extends OpMode
                 startState = false;
             }*/
 
+            if(gamepad2.right_stick_y > 0)
+            {
+                capLiftPower = 1.0;
+            }
+            else if(gamepad2.right_stick_y < 0)
+            {
+                capLiftPower = -1.0;
+            }
+            else
+            {
+                capLiftPower = 0;
+            }
 
             throttleLeft = Range.clip(throttleLeft, -1, 1);
             throttleRight = Range.clip(throttleRight, -1, 1);
@@ -395,6 +410,7 @@ public class DRTeleOp extends OpMode
                     motorRF.setPower(-throttleLeft);
                     }
 
+            capLift.setPower(capLiftPower);
             bBP.setPosition(bBPvalue);
             boot.setPosition(bootPosition);
 

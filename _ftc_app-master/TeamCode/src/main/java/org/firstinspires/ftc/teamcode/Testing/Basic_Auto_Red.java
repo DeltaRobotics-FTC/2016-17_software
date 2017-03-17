@@ -29,8 +29,8 @@ public class Basic_Auto_Red extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = .88;
-    double popperDown = 0.7;
+    double popperUp = .7;
+    double popperDown = 0.84;
 
     int x = 0;
     int count = 0;
