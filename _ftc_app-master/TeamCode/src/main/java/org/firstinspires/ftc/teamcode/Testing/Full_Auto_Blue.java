@@ -53,10 +53,10 @@ public class Full_Auto_Blue extends OpModeCamera {
     int lastE = 0;
     int encoderCount;
     int cps = 0;
-    long a2 = 0;
-    long c2 = 0;
-    long c = 0;
-    long a = 0;
+    long launchA2 = 0;
+    long launchC2 = 0;
+    long launchC = 0;
+    long launchA = 0;
     double popperUp = 0.7;
     double popperDown = 0.84;
     int avg = 0;
@@ -69,7 +69,7 @@ public class Full_Auto_Blue extends OpModeCamera {
     double distance;
     double launcherPower = 0;
 
-    enum States {Drive1, Turn1, ReadBeacon, ShortBackward, LongForward, PositionRobot, ShortForward, TurnToWhiteLine, TurnPastWhiteLine, ForwardToBeacon, StopRobot, SHOOT, SHOOT2}
+    enum States {Drive1, Turn1, ReadBeacon, ShortBackward, LongForward, PositionRobot, ShortForward, TurnToWhiteLine, TurnPastWhiteLine, ForwardToBeacon, StopRobot, SHOOT, SHOOT2, ShootTurn}
 
     States state;
 
@@ -485,7 +485,6 @@ public class Full_Auto_Blue extends OpModeCamera {
                 break;
             case SHOOT:
             {
-                //telemetry.addData("ODS_Raw_Light", ODS.getRawLightDetected());
                 if(test)
                 {
                     //c = System.currentTimeMillis();
@@ -516,11 +515,11 @@ public class Full_Auto_Blue extends OpModeCamera {
                     {
                         if(test3)
                         {
-                            c2 = System.currentTimeMillis();
+                            launchC2 = System.currentTimeMillis();
                             test3 = false;
                         }
-                        a2 = System.currentTimeMillis();
-                        if((a2 - c2) < t)
+                        launchA2 = System.currentTimeMillis();
+                        if((launchA2 - launchC) < t)
                         {
                             break;
                         }
@@ -554,12 +553,12 @@ public class Full_Auto_Blue extends OpModeCamera {
             case SHOOT2:
                 if(test1)
                 {
-                    c = System.currentTimeMillis();
+                    launchC = System.currentTimeMillis();
                     test1 = false;
                 }
                 popper.setPosition(popperUp);
-                a = System.currentTimeMillis();
-                if((a - c) < 1000)
+                launchA = System.currentTimeMillis();
+                if((launchA - launchC) < 1000)
                 {
                     break;
                 }
@@ -573,6 +572,24 @@ public class Full_Auto_Blue extends OpModeCamera {
                 }
                 break;
 
+            case ShootTurn:
+                while(motorR.getCurrentPosition() < 100)
+                {
+                    motorLF.setPower(.65);
+                    motorL.setPower(.65);
+                    motorRF.setPower(.65);
+                    motorR.setPower(.65);
+                }
+                motorL.setPower(0.0);
+                motorLF.setPower(0.0);
+                motorR.setPower(0.0);
+                motorRF.setPower(0.0);
+                motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                state = States.SHOOT;
+                break;
 
             case StopRobot:
                 motorL.setPower(0.0);

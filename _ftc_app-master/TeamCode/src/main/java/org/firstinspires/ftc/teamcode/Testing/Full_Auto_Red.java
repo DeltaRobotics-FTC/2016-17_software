@@ -26,7 +26,7 @@ public class Full_Auto_Red extends OpModeCamera {
     ColorSensor colorSensorL;
     ColorSensor colorSensorR;
     OpticalDistanceSensor ODS;
-    DcMotor launcherWheel;
+    //DcMotor launcherWheel;
     Servo popper;
     DcMotor collector;
 
@@ -53,10 +53,10 @@ public class Full_Auto_Red extends OpModeCamera {
     int lastE = 0;
     int encoderCount;
     int cps = 0;
-    long a2 = 0;
-    long c2 = 0;
-    long c = 0;
-    long a = 0;
+    long launchA2 = 0;
+    long launchC2 = 0;
+    long launchC = 0;
+    long launchA = 0;
     double popperUp = 0.7;
     double popperDown = 0.84;
     int avg = 0;
@@ -64,6 +64,16 @@ public class Full_Auto_Red extends OpModeCamera {
     //p-Previous was 20
     int t = 100;
     //t-Previous was 10
+    int motorLCurrentEnc = 0;
+    int motorRCurrentEnc = 0;
+    int encA = -500;
+    int encB = -375;
+    int encC = -1325;
+    int encD = -375;
+    int encE = -200;
+    int encF = -450;
+    int encG = -100;
+    //encD previously -150
 
 
     int drive1Telemetry = 0;
@@ -87,7 +97,7 @@ public class Full_Auto_Red extends OpModeCamera {
         colorSensorL = hardwareMap.colorSensor.get("colorSensorL");
         colorSensorR = hardwareMap.colorSensor.get("colorSensorR");
         ODS = hardwareMap.opticalDistanceSensor.get("ODS");
-        launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
+        //launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
         popper = hardwareMap.servo.get("popper");
         collector = hardwareMap.dcMotor.get("collector");
 
@@ -115,41 +125,22 @@ public class Full_Auto_Red extends OpModeCamera {
         distance = ODS.getRawLightDetected();
         telemetry.addData("ODS", distance);
         telemetry.addData("State", state);
-        if(System.currentTimeMillis() - constant > t)
+        /*if(System.currentTimeMillis() - constant > t)
         {
             rev++; //Making sure that the loop keeps running
             constant = System.currentTimeMillis(); //Resetting current time for calculating time difference
             encoderCount = launcherWheel.getCurrentPosition() - lastE; //Change in encoder counts
             lastE = launcherWheel.getCurrentPosition(); //Resetting the encoder position for calculating difference
             cps = encoderCount * (1000/t);
-            //****For Averaging****//
+
             avg = ((avg * (p - 1) + cps) / p);
 
-        }
+        }*/
 
         switch (state) {
+
             case Drive1:
-                /*if (motorL.getCurrentPosition() > -500) {
-                    motorLF.setPower(-.30);
-                    motorL.setPower(-.30);
-                    motorRF.setPower(.30);
-                    motorR.setPower(.30);
-                    telemetry.addData("LeftPower", -.30);
-                    telemetry.addData("RightPower", .30);
-                    break;
-                } else {
-                    motorL.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorR.setPower(0.0);
-                    motorRF.setPower(0.0);
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    state = States.Turn1;
-                    break;
-                }*/
-                while(motorR.getCurrentPosition() < 500)
+                while(motorL.getCurrentPosition() > motorLCurrentEnc + encA)
                 {
                     motorLF.setPower(-.30);
                     motorL.setPower(-.30);
@@ -161,84 +152,33 @@ public class Full_Auto_Red extends OpModeCamera {
                 motorLF.setPower(0.0);
                 motorR.setPower(0.0);
                 motorRF.setPower(0.0);
-                motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorLCurrentEnc = motorL.getCurrentPosition();
+                motorRCurrentEnc = motorR.getCurrentPosition();
+                sleep(250);
                 state = States.Turn1;
                 break;
 
             case Turn1:
-                /*motorLF.setPower(.65);
-                motorL.setPower(.65);
-                motorRF.setPower(.65);
-                motorR.setPower(.65);
-                telemetry.addData("L", motorL.getPower());
-                telemetry.addData("R", motorR.getPower());
-                telemetry.addData("LF", motorLF.getPower());
-                telemetry.addData("RF", motorRF.getPower());
-                telemetry.addData("Motor L", motorL.getCurrentPosition());
-                telemetry.addData("Motor R", motorR.getCurrentPosition());
-                if (motorL.getCurrentPosition() < 350)
+                while(motorL.getCurrentPosition() > motorLCurrentEnc + encB)
                 {
-                    break;
-                }
-                else
-                {
-                    motorL.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorR.setPower(0.0);
-                    motorRF.setPower(0.0);
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    state = States.LongForward;
-                    break;
-                }*/
-                while(motorL.getCurrentPosition() > -300)
-                {
-                    motorLF.setPower(-.8);
-                    motorL.setPower(-.8);
-                    motorRF.setPower(-.8);
-                    motorR.setPower(-.8);
+                    motorLF.setPower(-.65);
+                    motorL.setPower(-.65);
+                    motorRF.setPower(-.65);
+                    motorR.setPower(-.65);
                 }
                 telemetry.addData("Turn1", motorL.getCurrentPosition());
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);
                 motorR.setPower(0.0);
                 motorRF.setPower(0.0);
-                motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorLCurrentEnc = motorL.getCurrentPosition();
+                motorRCurrentEnc = motorR.getCurrentPosition();
+                sleep(250);
                 state = States.LongForward;
                 break;
 
             case LongForward:
-                /*if (motorL.getCurrentPosition() > -1800)
-                {
-                    motorLF.setPower(-.30);
-                    motorL.setPower(-.30);
-                    motorRF.setPower(.30);
-                    motorR.setPower(.30);
-                    telemetry.addData("LeftPower", -.30);
-                    telemetry.addData("RightPower", .30);
-                }
-                else
-                {
-                    motorL.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorR.setPower(0.0);
-                    motorRF.setPower(0.0);
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    state = States.TurnToWhiteLine;
-                }
-                break;*/
-                while(motorR.getCurrentPosition() < 1500)
+                while(motorL.getCurrentPosition() > motorLCurrentEnc + encC)
                 {
                     motorLF.setPower(-.35);
                     motorL.setPower(-.35);
@@ -250,30 +190,28 @@ public class Full_Auto_Red extends OpModeCamera {
                 motorLF.setPower(0.0);
                 motorR.setPower(0.0);
                 motorRF.setPower(0.0);
-                motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorLCurrentEnc = motorL.getCurrentPosition();
+                motorRCurrentEnc = motorR.getCurrentPosition();
+                sleep(250);
                 state = States.TurnToWhiteLine;
                 break;
 
             case TurnToWhiteLine:
-                while(motorL.getCurrentPosition() > -150)
+                while(motorL.getCurrentPosition() > motorLCurrentEnc + encD)
                 {
-                    motorLF.setPower(-.8);
-                    motorL.setPower(-.8);
-                    motorRF.setPower(-.8);
-                    motorR.setPower(-.8);
+                    motorLF.setPower(-.65);
+                    motorL.setPower(-.65);
+                    motorRF.setPower(-.65);
+                    motorR.setPower(-.65);
                 }
                 telemetry.addData("TurnToWhiteLine", motorL.getCurrentPosition());
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);
                 motorR.setPower(0.0);
                 motorRF.setPower(0.0);
-                motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                motorLCurrentEnc = motorL.getCurrentPosition();
+                motorRCurrentEnc = motorR.getCurrentPosition();
+                sleep(250);
                 state = States.PositionRobot;
                 break;
 
@@ -335,19 +273,13 @@ public class Full_Auto_Red extends OpModeCamera {
                     if(positionNum != 1)
                     {
                         positionNum = 1;
-                        motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                        motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        motorLCurrentEnc = motorL.getCurrentPosition();
+                        motorRCurrentEnc = motorR.getCurrentPosition();
                         state = States.ShortForward;
                     }
                     else
                     {
                         state = States.ReadBeacon;
-                        motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                        motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     }
                     break;
                 }
@@ -360,7 +292,7 @@ public class Full_Auto_Red extends OpModeCamera {
                     break*/
 
             case ShortForward:
-                if ((motorL.getCurrentPosition() > -200)) {
+                if (motorL.getCurrentPosition() > motorLCurrentEnc + encE) {
                     motorLF.setPower(-.20);
                     motorL.setPower(-.20);
                     motorRF.setPower(.20);
@@ -373,10 +305,7 @@ public class Full_Auto_Red extends OpModeCamera {
                     motorLF.setPower(0.0);
                     motorR.setPower(0.0);
                     motorRF.setPower(0.0);
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    sleep(250);
                     state = States.PositionRobot;
                 }
                 break;
@@ -394,8 +323,10 @@ public class Full_Auto_Red extends OpModeCamera {
                     break;*/
                     if(beaconColorRight.equals("BLUE"))
                     {
-                        bBP.setPosition(0.48);
+                        bBP.setPosition(0.38);
                         state = States.ForwardToBeacon;
+                        motorLCurrentEnc = motorL.getCurrentPosition();
+                        motorRCurrentEnc = motorR.getCurrentPosition();
                         sleep(500);
                         break;
                     }
@@ -403,6 +334,8 @@ public class Full_Auto_Red extends OpModeCamera {
                     {
                         bBP.setPosition(0.7);
                         state = States.ForwardToBeacon;
+                        motorLCurrentEnc = motorL.getCurrentPosition();
+                        motorRCurrentEnc = motorR.getCurrentPosition();
                         sleep(500);
                         break;
                     }
@@ -410,21 +343,25 @@ public class Full_Auto_Red extends OpModeCamera {
                 if(beaconColorLeft.equals("BLUE"))
                 {
                     bBP.setPosition(0.7);
+                    motorLCurrentEnc = motorL.getCurrentPosition();
+                    motorRCurrentEnc = motorR.getCurrentPosition();
                     state = States.ForwardToBeacon;
                     sleep(500);
                     break;
                 }
                 if(beaconColorLeft.equals("RED"))
                 {
-                    bBP.setPosition(0.48);
+                    bBP.setPosition(0.38);
                     state = States.ForwardToBeacon;
+                    motorLCurrentEnc = motorL.getCurrentPosition();
+                    motorRCurrentEnc = motorR.getCurrentPosition();
                     sleep(500);
                     break;
                 }
                 break;
 
             case ForwardToBeacon:
-                if(distance < .07 && motorL.getCurrentPosition() > -450)
+                if(distance < .07 && (motorL.getCurrentPosition() > motorLCurrentEnc + encF))
                 {
                     telemetry.addData("ODS_Raw_Light1", ODS.getRawLightDetected());
                     motorLF.setPower(-.15);
@@ -440,16 +377,14 @@ public class Full_Auto_Red extends OpModeCamera {
                     motorLF.setPower(0.0);
                     motorR.setPower(0.0);
                     motorRF.setPower(0.0);
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    motorLCurrentEnc = motorL.getCurrentPosition();
+                    motorRCurrentEnc = motorR.getCurrentPosition();
                     state = States.ShortBackward;
                     break;
                 }
 
             case ShortBackward:
-                if ((motorL.getCurrentPosition() < 100)) {
+                if ((motorL.getCurrentPosition() > motorLCurrentEnc + encG)) {
                     motorLF.setPower(.20);
                     motorL.setPower(.20);
                     motorRF.setPower(-.20);
@@ -464,11 +399,11 @@ public class Full_Auto_Red extends OpModeCamera {
                     motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    state = States.ShootTurn;
+                    state = States.StopRobot;
                 }
                 break;
             case SHOOT:
-            {
+            /*{
                 if(test)
                 {
                     //c = System.currentTimeMillis();
@@ -488,7 +423,7 @@ public class Full_Auto_Red extends OpModeCamera {
                 else
                 {
                 */
-                if(count < 2)
+                /*if(count < 2)
                 {
                     if (avg < -2150 && avg > -2250)
                     {
@@ -499,11 +434,11 @@ public class Full_Auto_Red extends OpModeCamera {
                     {
                         if(test3)
                         {
-                            c2 = System.currentTimeMillis();
+                            launchC2 = System.currentTimeMillis();
                             test3 = false;
                         }
-                        a2 = System.currentTimeMillis();
-                        if((a2 - c2) < t)
+                        launchA2 = System.currentTimeMillis();
+                        if((launchA2 - launchC) < t)
                         {
                             break;
                         }
@@ -537,12 +472,12 @@ public class Full_Auto_Red extends OpModeCamera {
             case SHOOT2:
                 if(test1)
                 {
-                    c = System.currentTimeMillis();
+                    launchC = System.currentTimeMillis();
                     test1 = false;
                 }
                 popper.setPosition(popperUp);
-                a = System.currentTimeMillis();
-                if((a - c) < 1000)
+                launchA = System.currentTimeMillis();
+                if((launchA - launchC) < 1000)
                 {
                     break;
                 }
@@ -574,7 +509,7 @@ public class Full_Auto_Red extends OpModeCamera {
                 motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 state = States.SHOOT;
                 break;
-
+*/
             case StopRobot:
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);

@@ -24,7 +24,7 @@ public class Servo_Calibration extends OpMode
 
     public void init()
     {
-        servo = hardwareMap.servo.get("popper");
+        servo = hardwareMap.servo.get("bBP");
         // Change the name in .get to calibrate another servo
     }
 
