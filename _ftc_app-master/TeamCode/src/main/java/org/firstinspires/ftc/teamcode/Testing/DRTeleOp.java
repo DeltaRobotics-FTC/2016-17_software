@@ -31,10 +31,10 @@ public class DRTeleOp extends OpMode
         float throttleRight = 0;
         double throttleScalingLeft = 1.0;
         double throttleScalingRight = 1.0;
-        double bBPvalue = 0.079;
-        double popperUp = 0.7;
-        double popperDown = 0.84;
-        double popperPosition = 0.84;
+        double bBPvalue = 0.01;
+        double popperUp = 0.69;
+        double popperDown = 0.94;
+        double popperPosition = 0.94;
 
         boolean bBpStop = false;
         boolean drive = true;
@@ -52,7 +52,7 @@ public class DRTeleOp extends OpMode
         long loopTime;
         long previousLoop = 0;
         boolean firstTime = true;
-        double launcherPower = -0.47;
+        double launcherPower = -0.50;
         double capLiftPower = 0;
         boolean dPadLeftState = false;
         boolean dPadRightState = false;
@@ -66,6 +66,8 @@ public class DRTeleOp extends OpMode
         double bootDown = .1;
         double bootPosition;
         boolean bootOut = true;
+        boolean leftStickButtonState = false;
+        boolean capMode = false;
 
         int a = 0;
         int p = 5;
@@ -135,11 +137,11 @@ public class DRTeleOp extends OpMode
                     a = ((a * (p - 1) + cps) / p);
                     if (a < -500 && autoAdjust) //Was -1800 on old flywheel
                     {
-                        if (a > -2150) {
-                            launcherPower -= .002;
+                        if (a > -2200) {
+                            launcherPower -= .008;
                         }
-                        if (a < -2250) {
-                            launcherPower += .005;
+                        if (a < -2300) {
+                            launcherPower += .008;
                         }
                     }
                 }
@@ -230,7 +232,7 @@ public class DRTeleOp extends OpMode
             if (gamepad2.a)
             {
                 bBpStop = true;
-                bBPvalue = 0.0079;
+                bBPvalue = 0.01;
                 bBP.setPosition(bBPvalue);
                 sleep(500);
             }
@@ -241,7 +243,7 @@ public class DRTeleOp extends OpMode
             if (gamepad2.y)
             {
                 bBpStop = true;
-                bBPvalue = 0.765;
+                bBPvalue = 0.64;
                 bBP.setPosition(bBPvalue);
                 sleep(500);
             }
@@ -269,7 +271,7 @@ public class DRTeleOp extends OpMode
                 bootPosition = bootUp;
             }
             //Setting the Popper Position
-            if ((gamepad2.right_trigger > 0.8 && a < -2150 && a > -2250 && cps < -2150))// || (gamepad2.right_trigger > 0.8 && !autoAdjust))
+            if ((gamepad2.right_trigger > 0.8 && a < -2200 && a > -2300 && cps < -2200))// || (gamepad2.right_trigger > 0.8 && !autoAdjust))
             {
 
                 popperTime = true;
@@ -339,12 +341,13 @@ public class DRTeleOp extends OpMode
             {
                 startState = false;
             }*/
-
-            if(gamepad2.right_stick_y > 0)
+        if (capMode == true)
+        {
+            if (gamepad2.right_stick_y > 0)
             {
                 capLiftPower = 1.0;
             }
-            else if(gamepad2.right_stick_y < 0)
+            else if (gamepad2.right_stick_y < 0)
             {
                 capLiftPower = -1.0;
             }
@@ -352,6 +355,11 @@ public class DRTeleOp extends OpMode
             {
                 capLiftPower = 0;
             }
+        }
+        else
+        {
+            capLiftPower = 0;
+        }
 
             throttleLeft = Range.clip(throttleLeft, -1, 1);
             throttleRight = Range.clip(throttleRight, -1, 1);
@@ -409,6 +417,18 @@ public class DRTeleOp extends OpMode
                     motorR.setPower(-throttleLeft);
                     motorRF.setPower(-throttleLeft);
                     }
+
+                if (gamepad2.left_stick_button && leftStickButtonState == false)
+                {
+                    leftStickButtonState = true;
+                    bBPvalue = 0.99;
+                    capMode = true;
+
+                }
+                else if (!gamepad2.left_stick_button)
+                {
+                    leftStickButtonState = false;
+                }
 
             capLift.setPower(capLiftPower);
             bBP.setPosition(bBPvalue);

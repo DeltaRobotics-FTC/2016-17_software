@@ -1,26 +1,57 @@
 package org.firstinspires.ftc.teamcode.Testing;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import for_camera_opmodes.OpModeCamera;
+
 /**
- * Created by RoboticsUser on 11/1/2016.
+ * Created by RoboticsUser on 3/28/2017.
  */
-@Autonomous (name = "Basic_Auto_Blue", group = "Basic Autonomous")
-public class Basic_Auto_Blue extends OpMode
-{
+@Autonomous(name = "Basic_Auto_Straight", group = "Basic Autonomous")
+public class Basic_Auto_Straight extends OpModeCamera {
     DcMotor motorL;
     DcMotor motorLF;
-    DcMotor motorLaunch;
     DcMotor motorR;
     DcMotor motorRF;
-
+    Servo bBP;
+    Servo boot;
+    ColorSensor colorSensorL;
+    ColorSensor colorSensorR;
+    OpticalDistanceSensor ODS;
     DcMotor launcherWheel;
     Servo popper;
     DcMotor collector;
 
+    String beaconColorLeft = "ERROR";
+    String beaconColorRight = "ERROR";
+    String[] beaconColors = new String[2];
+    double[] positionRobot = new double[20];
+    //**********************
+    //DO NOT CHANGE THIS!!!!
+    //**********************
+    int center = 240;
+    //**********************
+    //DO NOT CHANGE THIS!!!!
+    //**********************
+    double theta = 112358;
+    double topX = 132134;
+    int ds1 = 1;
+    double leftBoundary = 0;
+    double rightBoundary = 0;
+
+    int positionNum = 0;
+    int x = 0;
+    int count = 0;
+    int rev = 0;
+    boolean test = true;
+    boolean test1 = true;
+    boolean testloop = true;
+    boolean test3 = true;
     double constant = 0;
     int lastE = 0;
     int encoderCount;
@@ -29,27 +60,17 @@ public class Basic_Auto_Blue extends OpMode
     long c2 = 0;
     long c = 0;
     long a = 0;
-    double popperUp = 0.7;
-    double popperDown = 0.84;
-
-    int x = 0;
-    int count = 0;
-    int rev = 0;
-    boolean test = true;
-    boolean test1 = true;
-    boolean testloop = true;
-    boolean test3 = true;
-
-
+    double popperUp = 0.69;
+    double popperDown = 0.94;
     int avg = 0;
     int p = 5;
+    int iterationCount;
     //p-Previous was 20
     int t = 100;
-    //t-Previous was 10
 
     double launcherPower = 0;
 
-    enum states {DRIVE1, STOP, TURN, DRIVE2, SHOOT1, SHOOT2, SHOOT}
+    enum states {DRIVE1, STOP, SHOOT2, SHOOT}
     states state;
 
     public void init() {
@@ -93,7 +114,7 @@ public class Basic_Auto_Blue extends OpMode
         {
             case DRIVE1:
                 //Changed from 700 for testing
-                if (motorL.getCurrentPosition() > 650)
+                if (motorL.getCurrentPosition() > 300)
                 {
                     // Previous value was -1500
                     motorR.setPower(0.0);
@@ -125,14 +146,13 @@ public class Basic_Auto_Blue extends OpMode
                     break;
                 }
                 break;
-
             case SHOOT:
             {
                 if(test)
                 {
                     //c = System.currentTimeMillis();
                     test = false;
-                    launcherPower = -0.47;
+                    launcherPower = -.47;
                     launcherWheel.setPower(launcherPower);
                     //avg = launcherWheel.getCurrentPosition();
                 }
@@ -149,7 +169,7 @@ public class Basic_Auto_Blue extends OpMode
                 */
                 if(count < 2)
                 {
-                    if (avg < -2150 && avg > -2250)
+                    if (avg < -2200 && avg > -2300)
                     {
                         count++;
                         state = states.SHOOT2;
@@ -168,10 +188,10 @@ public class Basic_Auto_Blue extends OpMode
                         }
                         else
                         {
-                            if (avg < -2250) {
+                            if (avg < -2300) {
                                 launcherPower = launcherPower + .002;
                             }
-                            if (avg > -2150) {
+                            if (avg > -2200) {
                                 launcherPower = launcherPower - .002;
                             }
                             launcherWheel.setPower(launcherPower);
@@ -186,7 +206,7 @@ public class Basic_Auto_Blue extends OpMode
                 else
                 {
                     launcherWheel.setPower(0);
-                    state = states.TURN;
+                    state = states.STOP;
                     break;
                 }
                 break;
@@ -214,72 +234,7 @@ public class Basic_Auto_Blue extends OpMode
                     test1 = true;
                 }
                 break;
-            case TURN:
-                if(motorL.getCurrentPosition() < -50)
-                {
-                    state = states.DRIVE2;
-                    motorR.setPower(0.0);
-                    motorL.setPower(0.0);
-                    motorRF.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorLF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    break;
-                }
-                else
-                {
-                    telemetry.addData("Position L", motorL.getCurrentPosition());
-                    telemetry.addData("Position R", motorR.getCurrentPosition());
-                    motorL.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorR.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorLF.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRF.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorR.setPower(0.4);
-                    motorL.setPower(-0.4);
-                    motorRF.setPower(0.4);
-                    motorLF.setPower(-0.4);
-                    break;
-                }
 
-            case DRIVE2:
-                if (motorL.getCurrentPosition() > 1500)
-                {
-                    // Previous value was -1500
-                    motorR.setPower(0.0);
-                    motorL.setPower(0.0);
-                    motorRF.setPower(0.0);
-                    motorLF.setPower(0.0);
-                    state = states.STOP;
-                    motorL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorLF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorRF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    motorLF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    motorRF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                else
-                {
-                    telemetry.addData("Position L", motorL.getCurrentPosition());
-                    telemetry.addData("Position R", motorR.getCurrentPosition());
-                    motorL.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorR.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorLF.setDirection(DcMotorSimple.Direction.FORWARD);
-                    motorRF.setDirection(DcMotorSimple.Direction.REVERSE);
-                    motorR.setPower(0.4);
-                    motorL.setPower(0.4);
-                    motorRF.setPower(0.4);
-                    motorLF.setPower(0.4);
-                    break;
-                }
-                break;
             case STOP:
                 motorR.setPower(0.0);
                 motorL.setPower(0.0);
@@ -288,5 +243,7 @@ public class Basic_Auto_Blue extends OpMode
                 break;
         }
 
-    }
+
+}
+
 }

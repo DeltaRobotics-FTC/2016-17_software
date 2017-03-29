@@ -27,7 +27,7 @@ public class Full_Auto_Red extends OpModeCamera {
     ColorSensor colorSensorL;
     ColorSensor colorSensorR;
     OpticalDistanceSensor ODS;
-    //DcMotor launcherWheel;
+    DcMotor launcherWheel;
     Servo popper;
     DcMotor collector;
 
@@ -35,7 +35,13 @@ public class Full_Auto_Red extends OpModeCamera {
     String beaconColorRight = "ERROR";
     String[] beaconColors = new String[2];
     double[] positionRobot = new double[20];
-    int center = 200;
+    //**********************
+    //DO NOT CHANGE THIS!!!!
+    //**********************
+    int center = 240;
+    //**********************
+    //DO NOT CHANGE THIS!!!!
+    //**********************
     double theta = 112358;
     double topX = 132134;
     int ds1 = 1;
@@ -58,10 +64,11 @@ public class Full_Auto_Red extends OpModeCamera {
     long launchC2 = 0;
     long launchC = 0;
     long launchA = 0;
-    double popperUp = 0.7;
-    double popperDown = 0.84;
+    double popperUp = 0.69;
+    double popperDown = 0.94;
     int avg = 0;
     int p = 5;
+    int iterationCount;
     //p-Previous was 20
     int t = 100;
     //t-Previous was 10
@@ -69,10 +76,10 @@ public class Full_Auto_Red extends OpModeCamera {
     int motorRCurrentEnc = 0;
     int encA = -500;
     int encB = -375;
-    int encC = -1325;
-    int encD = -375;
+    int encC = -1300;
+    int encD = -425;
     int encE = -300;
-    int encF = -650;
+    int encF = -750;
     int encG = -100;
     //encD previously -150
 
@@ -99,7 +106,7 @@ public class Full_Auto_Red extends OpModeCamera {
         colorSensorL = hardwareMap.colorSensor.get("colorSensorL");
         colorSensorR = hardwareMap.colorSensor.get("colorSensorR");
         ODS = hardwareMap.opticalDistanceSensor.get("ODS");
-        //launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
+        launcherWheel = hardwareMap.dcMotor.get("launcherWheel");
         popper = hardwareMap.servo.get("popper");
         collector = hardwareMap.dcMotor.get("collector");
 
@@ -111,6 +118,7 @@ public class Full_Auto_Red extends OpModeCamera {
 
         //boot.setPosition(0.1);
         popper.setPosition(popperDown);
+        bBP.setPosition(.01);
 
 
         setCameraDownsampling(2);
@@ -127,7 +135,7 @@ public class Full_Auto_Red extends OpModeCamera {
         distance = ODS.getRawLightDetected();
         telemetry.addData("ODS", distance);
         telemetry.addData("State", state);
-        /*if(System.currentTimeMillis() - constant > t)
+        if(System.currentTimeMillis() - constant > t)
         {
             rev++; //Making sure that the loop keeps running
             constant = System.currentTimeMillis(); //Resetting current time for calculating time difference
@@ -137,7 +145,8 @@ public class Full_Auto_Red extends OpModeCamera {
 
             avg = ((avg * (p - 1) + cps) / p);
 
-        }*/
+        }
+        telemetry.addData("Average", avg);
 
         switch (state) {
 
@@ -248,7 +257,7 @@ public class Full_Auto_Red extends OpModeCamera {
                         }
                     }
                     SaveImage(rgbImage);*/
-                if ((topX - center) < -30) {
+                if ((topX - center) < -25) {
                     telemetry.addData("Pivot Fast", "Left!");
                     motorL.setPower(-.35);
                     motorLF.setPower(-.35);
@@ -257,7 +266,7 @@ public class Full_Auto_Red extends OpModeCamera {
                     sleep(400);
                     break;
 
-                } else if ((topX - center) > 30) {
+                } else if ((topX - center) > 25) {
                     telemetry.addData("Pivot Fast", "Right!");
                     motorL.setPower(.35);
                     motorLF.setPower(.35);
@@ -324,7 +333,7 @@ public class Full_Auto_Red extends OpModeCamera {
                     break;*/
                     if(beaconColorRight.equals("BLUE") || (beaconColorRight.equals("GREEN")))
                     {
-                        bBP.setPosition(0.38);
+                        bBP.setPosition(0.545);
                         state = States.ForwardToBeacon;
                         motorLCurrentEnc = motorL.getCurrentPosition();
                         motorRCurrentEnc = motorR.getCurrentPosition();
@@ -333,7 +342,7 @@ public class Full_Auto_Red extends OpModeCamera {
                     }
                     if(beaconColorRight.equals("RED"))
                     {
-                        bBP.setPosition(0.65);
+                        bBP.setPosition(0.88);
                         state = States.ForwardToBeacon;
                         motorLCurrentEnc = motorL.getCurrentPosition();
                         motorRCurrentEnc = motorR.getCurrentPosition();
@@ -343,7 +352,7 @@ public class Full_Auto_Red extends OpModeCamera {
                 }
                 if(beaconColorLeft.equals("BLUE") || (beaconColorLeft.equals("GREEN")))
                 {
-                    bBP.setPosition(0.65);
+                    bBP.setPosition(0.88);
                     motorLCurrentEnc = motorL.getCurrentPosition();
                     motorRCurrentEnc = motorR.getCurrentPosition();
                     state = States.ForwardToBeacon;
@@ -352,7 +361,7 @@ public class Full_Auto_Red extends OpModeCamera {
                 }
                 if(beaconColorLeft.equals("RED"))
                 {
-                    bBP.setPosition(0.38);
+                    bBP.setPosition(0.545);
                     state = States.ForwardToBeacon;
                     motorLCurrentEnc = motorL.getCurrentPosition();
                     motorRCurrentEnc = motorR.getCurrentPosition();
@@ -398,11 +407,11 @@ public class Full_Auto_Red extends OpModeCamera {
                     motorLF.setPower(0.0);
                     motorR.setPower(0.0);
                     motorRF.setPower(0.0);
-                    state = States.StopRobot;
+                    state = States.SHOOT;
                 }
                 break;
+
             case SHOOT:
-            /*{
                 if(test)
                 {
                     //c = System.currentTimeMillis();
@@ -411,62 +420,53 @@ public class Full_Auto_Red extends OpModeCamera {
                     launcherWheel.setPower(launcherPower);
                     //avg = launcherWheel.getCurrentPosition();
                 }
-
-                /*
-                a = System.currentTimeMillis();
-                if((a - c) < 2000)
-                {
-                    break;
-                }
-
                 else
                 {
-                */
-                /*if(count < 2)
-                {
-                    if (avg < -2150 && avg > -2250)
+                    if(count < 2)
                     {
-                        count++;
-                        state = States.SHOOT2;
-                    }
-                    else
-                    {
-                        if(test3)
+                        if (avg < -2200 && avg > -2300)
                         {
-                            launchC2 = System.currentTimeMillis();
-                            test3 = false;
-                        }
-                        launchA2 = System.currentTimeMillis();
-                        if((launchA2 - launchC) < t)
-                        {
-                            break;
+                            count++;
+                            state = States.SHOOT2;
                         }
                         else
                         {
-                            if (avg < -2250) {
-                                launcherPower = launcherPower + .002;
+                            if(test3)
+                            {
+                                launchC2 = System.currentTimeMillis();
+                                test3 = false;
                             }
-                            if (avg > -2150) {
-                                launcherPower = launcherPower - .002;
+                            launchA2 = System.currentTimeMillis();
+                            if((launchA2 - launchC2) < t)
+                            {
+                                break;
                             }
-                            launcherWheel.setPower(launcherPower);
-                            test3 = true;
+                            else
+                            {
+                                if (avg < -2200) {
+                                    launcherPower = launcherPower + .008;
+                                }
+                                if (avg > -2300) {
+                                    launcherPower = launcherPower - .008;
+                                }
+                                launcherWheel.setPower(launcherPower);
+                                test3 = true;
+                            }
+
+                            break;
                         }
 
+                        test = true;
+                    }
+                    else
+                    {
+                        launcherWheel.setPower(0);
+                        state = States.StopRobot;
                         break;
                     }
-
-                    test = true;
-                }
-                else
-                {
-                    launcherWheel.setPower(0);
-                    state = States.StopRobot;
                     break;
-                }
-                break;
-                //}
             }
+            break;
 
             case SHOOT2:
                 if(test1)
@@ -483,7 +483,10 @@ public class Full_Auto_Red extends OpModeCamera {
                 else
                 {
                     popper.setPosition(popperDown);
-                    //launcherWheel.setPower(0.00);
+                    while(iterationCount < 1000)
+                    {
+                        iterationCount++;
+                    }
                     state = States.SHOOT;
                     test = true;
                     test1 = true;
@@ -508,7 +511,7 @@ public class Full_Auto_Red extends OpModeCamera {
                 motorR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 state = States.SHOOT;
                 break;
-*/
+
             case StopRobot:
                 motorL.setPower(0.0);
                 motorLF.setPower(0.0);

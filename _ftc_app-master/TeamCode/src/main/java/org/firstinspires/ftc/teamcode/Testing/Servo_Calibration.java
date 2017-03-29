@@ -12,42 +12,60 @@ import com.qualcomm.robotcore.util.Range;
 public class Servo_Calibration extends OpMode
 {
 
-    Servo servo;
-    double servoPos = 0.7;
+    Servo popper;
+    Servo boot;
+    Servo bBP;
+
+    int iter = 0;
+
+    double bBPPos = 0.5;
+    double popperPos = 0.7;
+    double bootPos = 0.5;
+    double servoPos = 0.5;
+
     boolean bButtonState = false;
     boolean xButtonState = false;
 
-    boolean dpadRightState = false;
-    boolean dpadLeftState = false;
-
+    boolean leftBumperState = false;
+    boolean rightBumperState = false;
     // Following variables are used to tell the program when a user presses and releases a button
+
+    Servo servos[] = new Servo[3];
+    double servoPoses[] = {bBPPos, popperPos, bootPos};
+
 
     public void init()
     {
-        servo = hardwareMap.servo.get("bBP");
-        // Change the name in .get to calibrate another servo
+        bBP = hardwareMap.servo.get("bBP");
+        popper = hardwareMap.servo.get("popper");
+        boot = hardwareMap.servo.get("boot");
+        popper.setPosition(popperPos);
+        bBP.setPosition(bBPPos);
+        boot.setPosition(bootPos);
     }
 
     public void loop()
     {
-        if (gamepad1.dpad_left && dpadLeftState == false)
+
+
+        if (gamepad1.left_bumper && leftBumperState == false)
         {
-            dpadLeftState = true;
+            leftBumperState = true;
             servoPos -= 0.005;
         }
-        else if (!gamepad1.dpad_left)
+        else if (!gamepad1.left_bumper)
         {
-            dpadLeftState = false;
+            leftBumperState = false;
         }
 
-        if (gamepad1.dpad_right && dpadRightState == false)
+        if (gamepad1.right_bumper && rightBumperState == false)
         {
-            dpadRightState = true;
+            rightBumperState = true;
             servoPos += 0.005;
         }
-        else if (!gamepad1.dpad_right)
+        else if (!gamepad1.right_bumper)
         {
-            dpadRightState = false;
+            rightBumperState = false;
         }
 
         if (gamepad1.x && xButtonState == false)
@@ -76,10 +94,11 @@ public class Servo_Calibration extends OpMode
         }
 
         servoPos = Range.clip(servoPos, 0.01, 0.99);
-        servo.setPosition(servoPos);
+        bBP.setPosition(servoPos);
 
-        telemetry.addData("Servo Pos", servo.getPosition());
-        telemetry.addData("Servo Pos Var", servoPos);
+        //telemetry.addData("Servo Pos", servo.getPosition());
+
+
     }
 
 }

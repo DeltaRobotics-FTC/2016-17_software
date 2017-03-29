@@ -84,7 +84,7 @@ public class Basic_Auto_Red extends OpMode
         }
         telemetry.addData("Rev", rev);
         telemetry.addData("Encoder Position", launcherWheel.getCurrentPosition());
-        telemetry.addData("CPS", cps);
+        telemetry.addData("CapBallTakeDown", cps);
         telemetry.addData("Avg", avg);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
         collector.setPower(.8);

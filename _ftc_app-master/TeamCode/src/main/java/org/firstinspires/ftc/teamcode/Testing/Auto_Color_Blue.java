@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by RoboticsUser on 12/22/2016.
  */
-@Autonomous(name = "Full_Auto_Blue", group = "")
+@Autonomous(name = "Full_Auto_Blue_Old", group = "")
 public class Auto_Color_Blue extends OpMode {
     DcMotor motorL;
     DcMotor motorLF;

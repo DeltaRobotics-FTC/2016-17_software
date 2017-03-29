@@ -77,7 +77,7 @@ public class DR_Auto_New_Launcher extends OpMode
         }
         telemetry.addData("Rev", rev);
         telemetry.addData("Encoder Position", motorL.getCurrentPosition());
-        telemetry.addData("CPS", cps);
+        telemetry.addData("CapBallTakeDown", cps);
         telemetry.addData("Launcher Power", launcherWheel.getPower());
 
 
